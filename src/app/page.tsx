@@ -5,14 +5,22 @@ import { SearchBox } from "@/components/SearchBox";
 import { RegistryCardView } from "@/components/RegistryList";
 import { HEADLINE, HOW_IT_WORKS } from "@/lib/copy";
 import { getDb } from "@/lib/db";
+import { errorSummary } from "@/lib/log";
 import { formatPrice, fullTitle, toRegistryCard } from "@/lib/format";
 import { countClaimed, listIconic, listRegistry } from "@/lib/queries";
 import { TIER_PRICE_CENTS, toTitleDisplay } from "@/lib/titles";
 
 async function LatestClaims() {
   await connection();
-  const db = await getDb();
-  const [page, total] = await Promise.all([listRegistry(db, { tab: "recent", limit: 6 }), countClaimed(db)]);
+  let page, total;
+  try {
+    const db = await getDb();
+    [page, total] = await Promise.all([listRegistry(db, { tab: "recent", limit: 6 }), countClaimed(db)]);
+  } catch (err) {
+    // Database unreachable: keep the rest of the home page working.
+    console.error("home latest claims failed", errorSummary(err));
+    return null;
+  }
   return (
     <section aria-labelledby="latest">
       <div className="flex items-baseline justify-between gap-3">
@@ -40,8 +48,13 @@ async function LatestClaims() {
 
 async function IconicTeaser() {
   await connection();
-  const db = await getDb();
-  const open = (await listIconic(db)).filter((e) => !e.holder).slice(0, 3);
+  let open;
+  try {
+    open = (await listIconic(await getDb())).filter((e) => !e.holder).slice(0, 3);
+  } catch (err) {
+    console.error("home iconic teaser failed", errorSummary(err));
+    return null;
+  }
   if (open.length === 0) return null;
   return (
     <section aria-labelledby="iconic">
