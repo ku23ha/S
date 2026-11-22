@@ -13,6 +13,7 @@ import { type Db, isUniqueViolation } from "@/lib/db";
 import type { PaymentProvider } from "@/lib/payments/index";
 import { loadBlockedTerms, loadTierMap } from "@/lib/queries";
 import { CURRENCY, getTier, parseTitle, priceCents } from "@/lib/titles";
+import { errorSummary } from "@/lib/log";
 
 export const MAX_CLAIMS_PER_EMAIL_PER_DAY = 5;
 
@@ -126,7 +127,7 @@ export async function startCheckout(
       const check = await checkTitle(db, input.title).catch(() => undefined);
       return { ok: false, status: 409, error: "Someone else got to this title first.", check };
     }
-    console.error("checkout failed", err instanceof Error ? err.message : err);
+    console.error("checkout failed", errorSummary(err));
     return { ok: false, status: 503, error: "Checkout couldn't start. Please try again." };
   }
 }

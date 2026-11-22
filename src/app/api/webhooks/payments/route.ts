@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { WebhookVerificationError, getPaymentProvider } from "@/lib/payments/index";
 import { siteUrl } from "@/lib/site";
 import { handlePaymentEvent } from "@/lib/webhook";
+import { errorSummary } from "@/lib/log";
 
 /**
  * Payment provider webhook. 401 for a bad or missing signature, 400 for a
@@ -14,7 +15,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     provider = await getPaymentProvider();
   } catch (err) {
-    console.error("webhook: payments not configured", err instanceof Error ? err.message : err);
+    console.error("webhook: payments not configured", errorSummary(err));
     return Response.json({ error: "Not configured" }, { status: 500 });
   }
 
@@ -25,7 +26,7 @@ export async function POST(request: Request): Promise<Response> {
     if (err instanceof WebhookVerificationError) {
       return Response.json({ error: "Invalid signature" }, { status: 401 });
     }
-    console.error("webhook: unreadable body", err instanceof Error ? err.message : err);
+    console.error("webhook: unreadable body", errorSummary(err));
     return Response.json({ error: "Bad payload" }, { status: 400 });
   }
 
@@ -33,7 +34,7 @@ export async function POST(request: Request): Promise<Response> {
     const outcome = await handlePaymentEvent(await getDb(), provider, event, JSON.parse(raw), siteUrl(request));
     return Response.json({ ok: true, outcome });
   } catch (err) {
-    console.error("webhook: handling failed", err instanceof Error ? err.message : err);
+    console.error("webhook: handling failed", errorSummary(err));
     return Response.json({ error: "Handler failed" }, { status: 500 });
   }
 }

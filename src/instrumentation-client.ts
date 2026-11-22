@@ -6,7 +6,7 @@
  * Pageviews are sent as the custom page_view event by PageViewTracker.
  */
 import posthog from "posthog-js";
-import { sanitizePath, sanitizeReferrer } from "@/lib/analytics";
+import { scrubEventProperties } from "@/lib/analytics";
 
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
@@ -22,12 +22,10 @@ if (key) {
     persistence: "sessionStorage",
     before_send: (event) => {
       if (!event) return event;
-      const p = event.properties ?? {};
-      for (const k of ["$current_url", "$pathname"]) {
-        if (typeof p[k] === "string") p[k] = sanitizePath(p[k] as string);
-      }
-      for (const k of ["$referrer", "$initial_referrer"]) {
-        if (typeof p[k] === "string") p[k] = sanitizeReferrer(p[k] as string, window.location.origin);
+      if (event.properties) scrubEventProperties(event.properties, window.location.origin);
+      for (const k of ["$set", "$set_once"] as const) {
+        const nested = (event as unknown as Record<string, unknown>)[k];
+        if (nested && typeof nested === "object") scrubEventProperties(nested as Record<string, unknown>, window.location.origin);
       }
       return event;
     },

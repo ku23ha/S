@@ -4,6 +4,7 @@ import { decodeSlug, toImageData } from "@/lib/cert-routes";
 import { getDb } from "@/lib/db";
 import { getTitleByManageToken } from "@/lib/queries";
 import { siteHost } from "@/lib/site";
+import { errorSummary } from "@/lib/log";
 
 const Query = z.object({
   token: z.string().min(1).max(100),
@@ -34,7 +35,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       },
     });
   } catch (err) {
-    console.error("print file failed", err instanceof Error ? err.message : err);
+    console.error("print file failed", errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

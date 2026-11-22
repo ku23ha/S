@@ -16,6 +16,7 @@ import type { ReactElement } from "react";
 import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
 import { formatDate, formatRegistryNo } from "@/lib/format";
 import { TITLE_PREFIX } from "@/lib/titles";
+import { errorSummary } from "@/lib/log";
 
 export type ImageKind = "share" | "story" | "a4" | "letter";
 
@@ -324,7 +325,7 @@ export async function certificateImageResponse(
     const png = await renderCertificatePng(d, kind);
     return new Response(png, { headers: { "Content-Type": "image/png", ...headers } });
   } catch (err) {
-    if (d) console.error(`certificate image (${kind}) failed`, err instanceof Error ? err.message : err);
+    if (d) console.error(`certificate image (${kind}) failed`, errorSummary(err));
     const png = await toPng(<Fallback kind={kind} siteHost={siteHost} />, kind);
     return new Response(png, {
       status: d ? 200 : 404,

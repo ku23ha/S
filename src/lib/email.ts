@@ -7,6 +7,7 @@
  */
 import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
 import { formatRegistryNo, fullTitle } from "@/lib/format";
+import { errorSummary } from "@/lib/log";
 
 export interface OutgoingEmail {
   to: string;
@@ -69,7 +70,7 @@ export async function sendWithRetry(email: OutgoingEmail, attempts = 3): Promise
       await getEmailSender().send(email);
       return true;
     } catch (err) {
-      console.error(`email send failed (attempt ${i}/${attempts})`, err instanceof Error ? err.message : err);
+      console.error(`email send failed (attempt ${i}/${attempts})`, errorSummary(err));
       if (i < attempts) await new Promise((r) => setTimeout(r, 250 * 2 ** (i - 1)));
     }
   }

@@ -7,6 +7,7 @@ import type { Db } from "@/lib/db";
 import { moderateClaim } from "@/lib/moderation";
 import type { PaymentProvider } from "@/lib/payments/index";
 import { loadBlockedTerms } from "@/lib/queries";
+import { errorSummary } from "@/lib/log";
 
 export interface AdminTitle {
   id: string;
@@ -172,7 +173,7 @@ export async function rejectTitle(db: Db, provider: PaymentProvider, id: string,
       try {
         await provider.refund(t.payment_id, `Rejected in review: ${reason}`);
       } catch (err) {
-        console.error("admin reject refund failed", err instanceof Error ? err.message : err);
+        console.error("admin reject refund failed", errorSummary(err));
         return { ok: false, status: 502, error: "The refund failed, so nothing was changed. Try again." };
       }
     }
@@ -200,7 +201,7 @@ export async function removeTitle(
       try {
         await provider.refund(t.payment_id, `Removed: ${reason}`);
       } catch (err) {
-        console.error("admin remove refund failed", err instanceof Error ? err.message : err);
+        console.error("admin remove refund failed", errorSummary(err));
         return { ok: false, status: 502, error: "The refund failed, so nothing was changed. Try again, or remove without a refund." };
       }
     }

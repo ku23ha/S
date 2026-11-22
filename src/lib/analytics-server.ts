@@ -5,6 +5,7 @@
  * create person profiles. Failures are logged and swallowed.
  */
 import type { AnalyticsEventName, AnalyticsEvents } from "@/lib/analytics";
+import { errorSummary } from "@/lib/log";
 
 export interface CapturedEvent {
   distinctId: string;
@@ -26,7 +27,8 @@ let clientPromise: Promise<Client | null> | null = null;
 function getClient(): Promise<Client | null> {
   clientPromise ??= (async () => {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-    if (!key) return null;
+    // ANALYTICS_SERVER_DISABLED=1 lets end-to-end runs test browser events without server sends.
+    if (!key || process.env.ANALYTICS_SERVER_DISABLED === "1") return null;
     const { PostHog } = await import("posthog-node");
     return new PostHog(key, {
       host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
@@ -49,6 +51,6 @@ export async function trackServer<E extends AnalyticsEventName>(
     if (!client) return;
     await client.captureImmediate({ distinctId, event, properties: props, options: { process_person_profile: false } });
   } catch (err) {
-    console.error(`analytics ${event} failed`, err instanceof Error ? err.message : err);
+    console.error(`analytics ${event} failed`, errorSummary(err));
   }
 }

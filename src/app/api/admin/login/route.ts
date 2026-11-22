@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { attemptLogin, sameOrigin } from "@/lib/admin-auth";
 import { getDb } from "@/lib/db";
+import { errorSummary } from "@/lib/log";
 
 const Body = z.object({ password: z.string().min(1).max(200) });
 
@@ -17,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
     }
     return Response.json({ ok: true }, { headers: { "Set-Cookie": result.cookie } });
   } catch (err) {
-    console.error("admin login failed", err instanceof Error ? err.message : err);
+    console.error("admin login failed", errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

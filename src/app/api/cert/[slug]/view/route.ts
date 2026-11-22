@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { decodeSlug } from "@/lib/cert-routes";
 import { getDb } from "@/lib/db";
 import { LIMITS, clientIp, limitRequest } from "@/lib/ratelimit";
+import { errorSummary } from "@/lib/log";
 
 const BOT_UA = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|discord|slack|linkedin|embedly|headless/i;
 
@@ -37,7 +38,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     );
     return new Response(null, { status: 204 });
   } catch (err) {
-    console.error("view count failed", err instanceof Error ? err.message : err);
+    console.error("view count failed", errorSummary(err));
     return new Response(null, { status: 204 });
   }
 }

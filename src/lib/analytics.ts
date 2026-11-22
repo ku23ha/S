@@ -41,6 +41,27 @@ export function sanitizePath(urlOrPath: string): string {
     .replace(UUID_SEGMENT, "[id]");
 }
 
+const URL_KEY = /(_url|url|pathname|^\$current_url|^\$pathname)$/i;
+const REFERRER_KEY = /referrer$/i;
+
+/**
+ * Clean every URL-like property posthog-js adds (current, initial and
+ * session-entry URLs and paths, referrers), including inside $set and
+ * $set_once, so manage tokens, ids and query strings never leave the browser.
+ */
+export function scrubEventProperties(props: Record<string, unknown>, ownOrigin?: string): Record<string, unknown> {
+  for (const [k, v] of Object.entries(props)) {
+    if (v && typeof v === "object" && !Array.isArray(v) && (k === "$set" || k === "$set_once")) {
+      scrubEventProperties(v as Record<string, unknown>, ownOrigin);
+    } else if (typeof v === "string" && REFERRER_KEY.test(k)) {
+      props[k] = v === "$direct" ? v : sanitizeReferrer(v, ownOrigin);
+    } else if (typeof v === "string" && URL_KEY.test(k)) {
+      props[k] = sanitizePath(v);
+    }
+  }
+  return props;
+}
+
 /** Keep only the origin of an external referrer. */
 export function sanitizeReferrer(referrer: string | null | undefined, ownOrigin?: string): string | null {
   if (!referrer) return null;

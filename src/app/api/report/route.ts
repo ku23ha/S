@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/db";
 import { LIMITS, limitRequest } from "@/lib/ratelimit";
 import { ReportInput, submitReport } from "@/lib/reports";
+import { errorSummary } from "@/lib/log";
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -21,7 +22,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
     return Response.json({ ok: true });
   } catch (err) {
-    console.error("report failed", err instanceof Error ? err.message : err);
+    console.error("report failed", errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

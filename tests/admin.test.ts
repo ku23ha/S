@@ -10,7 +10,7 @@ import { GET as checkGET } from "@/app/api/titles/check/route";
 import { POST as webhookPOST } from "@/app/api/webhooks/payments/route";
 import { dailyStats } from "@/lib/admin";
 import { createSessionValue, hashPassword, verifyPassword, verifySessionValue } from "@/lib/admin-auth";
-import { sanitizePath, sanitizeReferrer } from "@/lib/analytics";
+import { sanitizePath, sanitizeReferrer, scrubEventProperties } from "@/lib/analytics";
 import { type CapturedEvent, setAnalyticsSinkForTests } from "@/lib/analytics-server";
 import { type Db, setDbForTests } from "@/lib/db";
 import { setEmailSenderForTests } from "@/lib/email";
@@ -299,6 +299,34 @@ describe("analytics", () => {
     expect(sanitizePath("/c/sunny-mom")).toBe("/c/sunny-mom");
     expect(sanitizeReferrer("https://wa.me/some/path?x=1")).toBe("https://wa.me");
     expect(sanitizeReferrer("https://site.test/c/x", "https://site.test")).toBeNull();
+  });
+
+  it("scrubs every URL-like property posthog-js adds, including $set_once", () => {
+    const token = "_mL_j2CCACisYNv0TqXE54NPAyz_ITHQ01f4pXDR-O8";
+    const props = scrubEventProperties(
+      {
+        $current_url: `https://site.test/manage/${token}`,
+        $session_entry_url: `https://site.test/manage/${token}`,
+        $session_entry_pathname: `/manage/${token}`,
+        $initial_current_url: "https://site.test/success?id=aceb3254-493c-4b46-ad2d-b17a43a457ec",
+        $referrer: "https://wa.me/abc?x=1",
+        $session_entry_referrer: "$direct",
+        $set_once: { $initial_current_url: `https://site.test/manage/${token}` },
+        path: "/c/chef",
+        tier: "standard",
+      },
+      "https://site.test",
+    );
+    expect(JSON.stringify(props)).not.toContain(token);
+    expect(JSON.stringify(props)).not.toContain("aceb3254");
+    expect(props).toMatchObject({
+      $current_url: "/manage/[token]",
+      $session_entry_url: "/manage/[token]",
+      $initial_current_url: "/success",
+      $referrer: "https://wa.me",
+      $session_entry_referrer: "$direct",
+      tier: "standard",
+    });
   });
 
   it("sends checkout_started and claim_completed with their properties and no personal data", async () => {

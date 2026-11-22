@@ -2,6 +2,7 @@ import { z } from "zod";
 import { checkTitle } from "@/lib/check";
 import { getDb } from "@/lib/db";
 import { LIMITS, limitRequest } from "@/lib/ratelimit";
+import { errorSummary } from "@/lib/log";
 
 const Query = z.object({ q: z.string().max(200) });
 
@@ -19,7 +20,7 @@ export async function GET(request: Request): Promise<Response> {
     const result = await checkTitle(db, parsed.data.q);
     return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
-    console.error("titles/check failed", err instanceof Error ? err.message : err);
+    console.error("titles/check failed", errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

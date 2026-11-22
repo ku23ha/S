@@ -127,6 +127,8 @@ export async function ensureSchema(pg: PGliteLike, root?: string): Promise<void>
  * inside the project tree every write would trigger a rebuild.
  */
 export function localDbDir(): string {
+  const override = process.env.LOCAL_DB_DIR;
+  if (override) return path.resolve(/*turbopackIgnore: true*/ override);
   return path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", ".cache", "wbr-pglite");
 }
 

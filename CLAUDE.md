@@ -6,7 +6,7 @@ The World's Best Registry. One holder per "World's Best ___" title. See docs/PRD
 ## Commands
 - npm run dev: local server
 - npm run test: Vitest
-- npm run e2e: Playwright
+- npm run e2e: Playwright (starts `next dev` on port 3200 with a fresh local database, the payment stub and intercepted PostHog; uses installed Chrome locally)
 - npm run typecheck: tsc --noEmit
 - npm run lint: ESLint
 - npm run db:fixtures: sample claims in the local .pglite database (dev only)

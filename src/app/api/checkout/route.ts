@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments/index";
 import { LIMITS, limitRequest } from "@/lib/ratelimit";
 import { siteUrl } from "@/lib/site";
+import { errorSummary } from "@/lib/log";
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -30,7 +31,7 @@ export async function POST(request: Request): Promise<Response> {
     }
     return Response.json({ titleId: result.titleId, checkoutUrl: result.checkoutUrl, reservedUntil: result.reservedUntil });
   } catch (err) {
-    console.error("checkout route failed", err instanceof Error ? err.message : err);
+    console.error("checkout route failed", errorSummary(err));
     return Response.json({ error: "Checkout couldn't start. Please try again." }, { status: 503 });
   }
 }

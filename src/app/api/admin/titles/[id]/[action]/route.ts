@@ -3,6 +3,7 @@ import { approveTitle, rejectTitle, removeTitle } from "@/lib/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getDb } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments/index";
+import { errorSummary } from "@/lib/log";
 
 const Body = z.object({
   reason: z.string().trim().max(500).optional().default(""),
@@ -35,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
     return Response.json({ ok: true });
   } catch (err) {
-    console.error(`admin ${action} failed`, err instanceof Error ? err.message : err);
+    console.error(`admin ${action} failed`, errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

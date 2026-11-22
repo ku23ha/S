@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { listRegistry } from "@/lib/queries";
 import { toRegistryCard } from "@/lib/format";
 import { normalizeTitleKey } from "@/lib/titles";
+import { errorSummary } from "@/lib/log";
 
 const Query = z.object({
   tab: z.enum(["recent", "lowest"]).default("recent"),
@@ -28,7 +29,7 @@ export async function GET(request: Request): Promise<Response> {
       { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=30" } },
     );
   } catch (err) {
-    console.error("registry failed", err instanceof Error ? err.message : err);
+    console.error("registry failed", errorSummary(err));
     return Response.json({ error: "Try again in a moment." }, { status: 503 });
   }
 }

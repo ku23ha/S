@@ -2,6 +2,7 @@
 import type { CertImageData } from "@/lib/cert-image";
 import { getDb } from "@/lib/db";
 import { type PublicHolder, getCertificateBySlug } from "@/lib/queries";
+import { errorSummary } from "@/lib/log";
 
 export function decodeSlug(raw: string): string {
   try {
@@ -29,7 +30,7 @@ export async function publicImageData(rawSlug: string, host: string): Promise<Ce
     const cert = await getCertificateBySlug(await getDb(), decodeSlug(rawSlug));
     return cert ? toImageData(cert, host) : null;
   } catch (err) {
-    console.error("certificate lookup failed", err instanceof Error ? err.message : err);
+    console.error("certificate lookup failed", errorSummary(err));
     return null;
   }
 }
