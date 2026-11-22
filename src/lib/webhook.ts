@@ -9,13 +9,15 @@
  * and the provider's retry runs the handler again. Emails go out only after
  * commit, with an idempotency key, so a retry never double-sends.
  */
+import type { AnalyticsEvents } from "@/lib/analytics";
+import { trackServer } from "@/lib/analytics-server";
 import { type Db, isUniqueViolation } from "@/lib/db";
 import { type OutgoingEmail, claimEmail, refundEmail, sendWithRetry } from "@/lib/email";
 import { certificatePath } from "@/lib/format";
 import { moderateClaim } from "@/lib/moderation";
 import type { PaymentEvent, PaymentProvider } from "@/lib/payments/index";
 import { findFreeKeys, loadBlockedTerms } from "@/lib/queries";
-import { type ParsedTitle, suggestVariants } from "@/lib/titles";
+import { type ParsedTitle, type Tier, suggestVariants } from "@/lib/titles";
 
 export type WebhookOutcome =
   | "duplicate"
@@ -43,6 +45,10 @@ interface TitleRow extends Record<string, unknown> {
   manage_token: string;
   price_cents: number;
   payment_id: string | null;
+  tier: Tier;
+  addon_print: boolean;
+  analytics_id: string | null;
+  ref_slug: string | null;
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,14 +58,15 @@ function eventType(e: PaymentEvent): string {
 }
 
 async function findPaymentRow(tx: Db, e: Extract<PaymentEvent, { kind: "payment_succeeded" }>): Promise<TitleRow | null> {
-  const cols = `id, title_key, title_display, slug, status, recipient_name, giver_name, dedication, buyer_email,
-    manage_token, price_cents, payment_id`;
+  const cols = `t.id, t.title_key, t.title_display, t.slug, t.status, t.recipient_name, t.giver_name, t.dedication,
+    t.buyer_email, t.manage_token, t.price_cents, t.payment_id, t.tier, t.addon_print, t.analytics_id,
+    (select r.slug from titles r where r.id = t.ref_title_id) as ref_slug`;
   if (e.titleId && UUID_RE.test(e.titleId)) {
-    const rows = await tx.query<TitleRow>(`select ${cols} from titles where id = $1 for update`, [e.titleId]);
+    const rows = await tx.query<TitleRow>(`select ${cols} from titles t where t.id = $1 for update of t`, [e.titleId]);
     if (rows[0]) return rows[0];
   }
   if (e.checkoutId) {
-    const rows = await tx.query<TitleRow>(`select ${cols} from titles where checkout_id = $1 for update`, [e.checkoutId]);
+    const rows = await tx.query<TitleRow>(`select ${cols} from titles t where t.checkout_id = $1 for update of t`, [e.checkoutId]);
     if (rows[0]) return rows[0];
   }
   return null;
@@ -114,6 +121,7 @@ export async function handlePaymentEvent(
   site: string,
 ): Promise<WebhookOutcome> {
   const emails: OutgoingEmail[] = [];
+  const completed: { distinctId: string; properties: AnalyticsEvents["claim_completed"] }[] = [];
 
   const outcome = await db.transaction<WebhookOutcome>(async (tx) => {
     const inserted = await tx.query(
@@ -126,9 +134,10 @@ export async function handlePaymentEvent(
     if (event.kind === "ignored") return "ignored";
 
     if (event.kind === "payment_reversed") {
+      // A rejected entry was already freed (and refunded) by an admin; leave it rejected.
       const rows = await tx.query(
         `update titles set status = 'removed', updated_at = now()
-         where payment_id = $1 and status <> 'removed' returning id`,
+         where payment_id = $1 and status in ('reserved','claimed','in_review','expired') returning id`,
         [event.paymentId],
       );
       return rows.length ? "removed" : "nothing_to_remove";
@@ -157,7 +166,17 @@ export async function handlePaymentEvent(
       });
     }
 
-    const sendClaim = (status: "claimed" | "in_review", registryNo: number) =>
+    const sendClaim = (status: "claimed" | "in_review", registryNo: number) => {
+      completed.push({
+        distinctId: row.analytics_id ?? `title:${row.id}`,
+        properties: {
+          tier: row.tier,
+          addon_print: row.addon_print,
+          price_cents: row.price_cents,
+          ref_slug: row.ref_slug,
+          registry_no: registryNo,
+        },
+      });
       emails.push(
         claimEmail({
           to: row.buyer_email,
@@ -170,6 +189,7 @@ export async function handlePaymentEvent(
           inReview: status === "in_review",
         }),
       );
+    };
 
     const refundTaken = async (): Promise<WebhookOutcome> => {
       await provider.refund(event.paymentId, "Title was claimed by someone else before this payment arrived.");
@@ -219,5 +239,6 @@ export async function handlePaymentEvent(
   });
 
   for (const email of emails) await sendWithRetry(email);
+  for (const c of completed) await trackServer(c.distinctId, "claim_completed", c.properties);
   return outcome;
 }

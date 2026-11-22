@@ -81,6 +81,12 @@ create table rate_limits (
 
 Row level security is enabled on every table with no public policies. Only server code using the service key touches the database.
 
+### 0002_admin_analytics.sql (additive)
+- `titles.analytics_id text`: the buyer browser's anonymous PostHog id, so the server-side `claim_completed` event joins the same funnel. Not personal data.
+- `titles.removal_reason text`: why an admin rejected or removed an entry.
+- Indexes on `titles(manage_token)`, open `reports(title_id)`, `certificate_views(day)` and `rate_limits(window_start)`.
+The one-holder partial unique indexes are unchanged.
+
 ## Title rules (implement exactly)
 - The prefix "World's Best" is fixed and never stored.
 - Input remainder: 2 to 40 characters; letters, numbers, spaces, apostrophes, hyphens.

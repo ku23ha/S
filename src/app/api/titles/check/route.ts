@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { checkTitle } from "@/lib/check";
 import { getDb } from "@/lib/db";
+import { LIMITS, limitRequest } from "@/lib/ratelimit";
 
 const Query = z.object({ q: z.string().max(200) });
 
@@ -13,6 +14,8 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     const db = await getDb();
+    const limited = await limitRequest(db, LIMITS.search, request);
+    if (limited) return limited;
     const result = await checkTitle(db, parsed.data.q);
     return Response.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {

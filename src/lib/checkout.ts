@@ -6,6 +6,7 @@
  * the transaction rolls back, so the reservation is released.
  */
 import { randomBytes } from "node:crypto";
+import { trackServer } from "@/lib/analytics-server";
 import type { ClaimInput } from "@/lib/claim";
 import { type CheckResult, checkTitle } from "@/lib/check";
 import { type Db, isUniqueViolation } from "@/lib/db";
@@ -76,9 +77,9 @@ export async function startCheckout(
       try {
         const rows = await tx.query<{ id: string; reserved_until: Date }>(
           `insert into titles (title_key, title_display, slug, tier, status, recipient_name, giver_name, dedication,
-             addon_print, buyer_email, price_cents, currency, manage_token, ref_title_id, reserved_until)
+             addon_print, buyer_email, price_cents, currency, manage_token, ref_title_id, reserved_until, analytics_id)
            values ($1, $2, $3, $4, 'reserved', $5, $6, $7, $8, $9, $10, $11, $12, $13,
-             now() + ($14::int * interval '1 minute'))
+             now() + ($14::int * interval '1 minute'), $15)
            returning id, reserved_until`,
           [
             title.key,
@@ -95,6 +96,7 @@ export async function startCheckout(
             newManageToken(),
             refTitleId,
             minutes,
+            input.analyticsId ?? null,
           ],
         );
         row = rows[0];
@@ -112,6 +114,11 @@ export async function startCheckout(
       });
       await tx.query(`update titles set checkout_id = $2, updated_at = now() where id = $1`, [row.id, session.checkoutId]);
       return { titleId: row.id, checkoutUrl: session.checkoutUrl, reservedUntil: new Date(row.reserved_until).toISOString() };
+    });
+    await trackServer(input.analyticsId ?? `title:${result.titleId}`, "checkout_started", {
+      tier,
+      addon_print: input.addonPrint,
+      price_cents: amount,
     });
     return { ok: true, ...result };
   } catch (err) {

@@ -3,8 +3,9 @@
 import { type FormEvent, useEffect, useId, useState } from "react";
 import { ClaimInput, DEDICATION_MAX, DEDICATION_MAX_WITH_PRINT, NAME_MAX } from "@/lib/claim";
 import { formatPrice } from "@/lib/format";
+import { analyticsId, track } from "@/lib/analytics-client";
 import { getSessionRef } from "@/lib/session-ref";
-import { PRINT_ADDON_CENTS } from "@/lib/titles";
+import { PRINT_ADDON_CENTS, type Tier } from "@/lib/titles";
 
 function remaining(untilIso: string, now: number): string {
   const ms = Math.max(0, new Date(untilIso).getTime() - now);
@@ -49,10 +50,12 @@ type FieldErrors = Partial<Record<"recipientName" | "giverName" | "dedication" |
 export function ClaimForm({
   titleDisplay,
   basePriceCents,
+  tier,
   refSlug,
 }: {
   titleDisplay: string;
   basePriceCents: number;
+  tier: Tier;
   refSlug?: string;
 }) {
   const id = useId();
@@ -68,6 +71,10 @@ export function ClaimForm({
   const dedicationMax = addonPrint ? DEDICATION_MAX_WITH_PRINT : DEDICATION_MAX;
   const total = basePriceCents + (addonPrint ? PRINT_ADDON_CENTS : 0);
 
+  useEffect(() => {
+    track("claim_started", { tier, price_cents: basePriceCents, ref_slug: refSlug || getSessionRef() });
+  }, [tier, basePriceCents, refSlug]);
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const parsed = ClaimInput.safeParse({
@@ -78,6 +85,7 @@ export function ClaimForm({
       email,
       addonPrint,
       refSlug: refSlug || getSessionRef() || undefined,
+      analyticsId: analyticsId(),
     });
     if (!parsed.success) {
       const next: FieldErrors = {};

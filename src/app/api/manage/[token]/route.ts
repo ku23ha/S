@@ -1,6 +1,7 @@
 import { ManageInput } from "@/lib/claim";
 import { getDb } from "@/lib/db";
 import { applyManageEdit } from "@/lib/manage";
+import { LIMITS, limitRequest } from "@/lib/ratelimit";
 
 export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }): Promise<Response> {
   const { token } = await params;
@@ -15,7 +16,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     return Response.json({ error: parsed.error.issues[0]?.message ?? "Check the form and try again." }, { status: 400 });
   }
   try {
-    const result = await applyManageEdit(await getDb(), token, parsed.data);
+    const db = await getDb();
+    const limited = await limitRequest(db, LIMITS.manage, request);
+    if (limited) return limited;
+    const result = await applyManageEdit(db, token, parsed.data);
     if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
     return Response.json({ status: result.status });
   } catch (err) {

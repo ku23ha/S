@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { TrackedDownload } from "@/components/Tracking";
+import type { AnalyticsEvents } from "@/lib/analytics";
+import { track } from "@/lib/analytics-client";
 import { certificatePath } from "@/lib/format";
 
 const subscribeNoop = () => () => {};
@@ -16,7 +19,10 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
     () => false,
   );
 
+  const shared = (channel: AnalyticsEvents["share_clicked"]["channel"]) => track("share_clicked", { channel, slug });
+
   async function nativeShare() {
+    shared("native");
     try {
       await navigator.share({ title: text, text, url });
     } catch {
@@ -25,6 +31,7 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
   }
 
   async function copy() {
+    shared("copy");
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -48,7 +55,13 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
         <button type="button" onClick={copy} className={btn} aria-live="polite">
           {copied ? "Link copied" : "Copy link"}
         </button>
-        <a className={btn} href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`} target="_blank" rel="noopener noreferrer">
+        <a
+          className={btn}
+          href={`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => shared("whatsapp")}
+        >
           WhatsApp
         </a>
         <a
@@ -56,6 +69,7 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
           href={`https://twitter.com/intent/tweet?${new URLSearchParams({ text, url }).toString()}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => shared("x")}
         >
           X
         </a>
@@ -64,15 +78,21 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
           href={`https://www.linkedin.com/sharing/share-offsite/?${new URLSearchParams({ url }).toString()}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => shared("linkedin")}
         >
           LinkedIn
         </a>
-        <a className={btn} href={`/c/${encodedSlug}/opengraph-image`} download="worlds-best.png">
+        <TrackedDownload kind="share_image" className={btn} href={`/c/${encodedSlug}/opengraph-image`} download="worlds-best.png">
           Download image
-        </a>
-        <a className={btn} href={`/api/cert/${encodedSlug}/story?download=1`} download="worlds-best-story.png">
+        </TrackedDownload>
+        <TrackedDownload
+          kind="story_image"
+          className={btn}
+          href={`/api/cert/${encodedSlug}/story?download=1`}
+          download="worlds-best-story.png"
+        >
           Download story
-        </a>
+        </TrackedDownload>
       </div>
     </section>
   );

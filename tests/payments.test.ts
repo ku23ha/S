@@ -71,9 +71,16 @@ const claim = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
+let ipCounter = 0;
 async function checkout(body: Record<string, unknown>) {
+  // A fresh client IP per request, so the per-IP checkout limit doesn't mask what each test checks.
+  ipCounter += 1;
   const res = await checkoutPOST(
-    new Request("http://test/api/checkout", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
+    new Request("http://test/api/checkout", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-forwarded-for": `10.0.${Math.floor(ipCounter / 250)}.${ipCounter % 250}` },
+      body: JSON.stringify(body),
+    }),
   );
   return { status: res.status, body: (await res.json()) as Record<string, unknown> };
 }

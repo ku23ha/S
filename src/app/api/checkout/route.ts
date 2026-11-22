@@ -2,6 +2,7 @@ import { ClaimInput } from "@/lib/claim";
 import { startCheckout } from "@/lib/checkout";
 import { getDb } from "@/lib/db";
 import { getPaymentProvider } from "@/lib/payments/index";
+import { LIMITS, limitRequest } from "@/lib/ratelimit";
 import { siteUrl } from "@/lib/site";
 
 export async function POST(request: Request): Promise<Response> {
@@ -21,6 +22,8 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const [db, provider] = await Promise.all([getDb(), getPaymentProvider()]);
+    const limited = await limitRequest(db, LIMITS.checkout, request);
+    if (limited) return limited;
     const result = await startCheckout(db, provider, parsed.data, siteUrl(request));
     if (!result.ok) {
       return Response.json({ error: result.error, check: result.check }, { status: result.status });

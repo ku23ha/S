@@ -106,16 +106,20 @@ export function schemaSql(root = process.cwd()): string[] {
   const read = (p: string) => readFileSync(/*turbopackIgnore: true*/ path.join(/*turbopackIgnore: true*/ root, p), "utf8");
   return [
     read("supabase/migrations/0001_init.sql"),
+    read("supabase/migrations/0002_admin_analytics.sql"),
     read("supabase/seed/tier_titles.sql"),
     read("supabase/seed/blocked_terms.sql"),
   ];
 }
 
-/** Apply migration and seeds if the schema is missing. */
+/** Apply migrations and seeds. Every file is idempotent except 0001, which runs once. */
 export async function ensureSchema(pg: PGliteLike, root?: string): Promise<void> {
   const { rows } = await pg.query<{ exists: boolean }>(`select to_regclass('public.titles') is not null as exists`);
-  if (rows[0]?.exists) return;
-  for (const sql of schemaSql(root)) await pg.exec(sql);
+  const files = schemaSql(root);
+  for (const [i, sql] of files.entries()) {
+    if (i === 0 && rows[0]?.exists) continue;
+    await pg.exec(sql);
+  }
 }
 
 /**

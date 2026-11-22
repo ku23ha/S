@@ -8,6 +8,7 @@ import { SearchBox } from "@/components/SearchBox";
 import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { ShareBar } from "@/components/ShareBar";
+import { OwnerMark } from "@/components/Tracking";
 import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getTitleById } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
@@ -28,7 +29,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
         <h1 className="text-2xl font-bold">We couldn&apos;t find that claim</h1>
         <p className="mt-2">Check the link in your email, or search for the title below.</p>
         <div className="mt-6">
-          <SearchBox />
+          <SearchBox source="success" />
         </div>
       </div>
     );
@@ -50,6 +51,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
     const inReview = t.status === "in_review";
     return (
       <div className="flex flex-col gap-6">
+        <OwnerMark slug={t.slug} />
         <div>
           <h1 className="text-2xl font-bold">{inReview ? "Payment received" : "It's theirs"}</h1>
           <p className="mt-1 text-neutral-700 dark:text-neutral-300">
@@ -80,7 +82,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
             Claim another
           </h2>
           <div className="mt-3">
-            <SearchBox />
+            <SearchBox source="success" />
           </div>
         </section>
       </div>
@@ -97,7 +99,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
           : "This claim was not completed. If you paid, you'll be refunded in full."}
       </p>
       <div className="mt-6">
-        <SearchBox initialValue={t.titleDisplay} />
+        <SearchBox source="success" initialValue={t.titleDisplay} />
       </div>
     </div>
   );

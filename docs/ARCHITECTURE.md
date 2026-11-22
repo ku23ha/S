@@ -35,6 +35,13 @@ Verify on the day: Vercel's current plan terms, and Supabase's free-tier pausing
 - Attribution: when a browsing session starts on a certificate page, its slug is kept in `sessionStorage` and sent with the checkout as `refSlug`; certificate search links also carry `ref`. Checkout stores it as `ref_title_id`.
 - The manage page (`/manage/[token]`, linked from the buyer email) allows fixing the name, from line and dedication within 24 hours and serves the print downloads. It is `noindex` with `Referrer-Policy: no-referrer` so the token doesn't leak.
 
+## Analytics, moderation and admin
+- PostHog in the browser is set up in `src/instrumentation-client.ts`: no autocapture, no session recording, no person profiles, `sessionStorage` persistence (no cookies), and `before_send` strips manage tokens, ids and query strings from URLs. Events follow docs/API.md; `page_view` is our own event. Server events (`checkout_started`, `claim_completed`) use posthog-node `captureImmediate` with `process_person_profile: false`, keyed by the browser's anonymous id stored in `titles.analytics_id`.
+- Unique certificate views: the certificate page posts to `/api/cert/[slug]/view` unless the browser session is the buyer's (marked on the success page). The server stores a daily-rotating salted hash of IP, user agent and date, and ignores known link-preview bots.
+- Rate limits (`src/lib/ratelimit.ts`, fixed windows in `rate_limits`, IPs hashed): search 60/min, checkout 5/h, report 5/h, manage edits 20/h, view beacons 120/min. Admin login: after 5 failures per IP in 15 minutes, further attempts are refused, even with the right password; 50 failures in total in 15 minutes also lock it.
+- Moderation rules: blocked terms in titles are refused at search; blocked terms or contact details in names or dedications send a paid entry to review; a report from the person named hides the page at once; three open reports hide it. Hidden means `in_review`; the title stays held until an admin decides.
+- Admin (`/admin`): password from `ADMIN_PASSWORD_HASH` (scrypt, made with `npm run admin:hash`), signed httpOnly SameSite=Strict session cookie (`SESSION_SECRET`, 32+ characters), same-origin checks on every admin POST. Review queue (approve, or reject with refund), open reports (dismiss, remove), search, and a 14-day table from the database: searches, searchers, checkouts, claims, gross, share rate, loop claims, certificate views. Visitors are in PostHog.
+
 ## Folder structure
 ```
 CLAUDE.md

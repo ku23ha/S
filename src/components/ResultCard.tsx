@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { CheckResult, CheckVariant } from "@/lib/check";
+import type { Tier } from "@/lib/titles";
 import { certificatePath, claimHref, formatDate, formatPrice, formatRegistryNo, fullTitle } from "@/lib/format";
 
 export type SearchState =
@@ -16,7 +17,7 @@ function Variants({
   onPlace,
 }: {
   variants: CheckVariant[];
-  onPick: (display: string) => void;
+  onPick: (display: string, tier: Tier) => void;
   onPlace: (prefix: string) => void;
 }) {
   if (variants.length === 0) return null;
@@ -41,7 +42,7 @@ function Variants({
             <li key={v.title.key}>
               <button
                 type="button"
-                onClick={() => onPick(v.title.display)}
+                onClick={() => onPick(v.title.display, v.title.tier)}
                 className="flex w-full items-center justify-between gap-3 rounded-lg border border-neutral-300 px-3 py-2 text-left text-base hover:border-neutral-500 dark:border-neutral-700"
               >
                 <span className="[overflow-wrap:anywhere]">{fullTitle(v.title.display)}</span>
@@ -65,7 +66,7 @@ export function ResultCard({
 }: {
   state: SearchState;
   refSlug?: string;
-  onPick: (display: string) => void;
+  onPick: (display: string, tier: Tier) => void;
   onPlace: (prefix: string) => void;
 }) {
   if (state.kind === "empty") return null;

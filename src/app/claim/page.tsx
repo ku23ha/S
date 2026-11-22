@@ -28,7 +28,7 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
       <div>
         <h1 className="text-2xl font-bold">Which title?</h1>
         <div className="mt-4">
-          <SearchBox autoFocus refSlug={ref} />
+          <SearchBox source="claim" autoFocus refSlug={ref} />
         </div>
       </div>
     );
@@ -69,7 +69,7 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
           <p className="mt-2">{message}</p>
         )}
         <div className="mt-6">
-          <SearchBox initialValue={raw} refSlug={ref} />
+          <SearchBox source="claim" initialValue={raw} refSlug={ref} />
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
           Available · {formatPrice(t.priceCents)} · {t.tier === "standard" ? "Standard" : t.tier === "popular" ? "Popular" : "Iconic"} title
         </p>
       </div>
-      <ClaimForm titleDisplay={t.display} basePriceCents={t.priceCents} refSlug={ref} />
+      <ClaimForm titleDisplay={t.display} basePriceCents={t.priceCents} tier={t.tier} refSlug={ref} />
     </div>
   );
 }

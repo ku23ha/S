@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
 import { ManageForm } from "@/components/ManageForm";
+import { TrackedDownload } from "@/components/Tracking";
 import { canEdit } from "@/lib/claim";
 import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
@@ -69,12 +70,20 @@ async function ManageBody({ params }: { params: Params }) {
             Print file
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <a href={printHref("a4")} className="rounded-lg border border-neutral-300 px-3 py-3 text-center font-medium dark:border-neutral-700">
+            <TrackedDownload
+              kind="print_a4"
+              href={printHref("a4")}
+              className="rounded-lg border border-neutral-300 px-3 py-3 text-center font-medium dark:border-neutral-700"
+            >
               Download A4
-            </a>
-            <a href={printHref("letter")} className="rounded-lg border border-neutral-300 px-3 py-3 text-center font-medium dark:border-neutral-700">
+            </TrackedDownload>
+            <TrackedDownload
+              kind="print_letter"
+              href={printHref("letter")}
+              className="rounded-lg border border-neutral-300 px-3 py-3 text-center font-medium dark:border-neutral-700"
+            >
               Download US Letter
-            </a>
+            </TrackedDownload>
           </div>
         </section>
       )}

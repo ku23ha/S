@@ -4,7 +4,9 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
 import { SearchBox } from "@/components/SearchBox";
+import Link from "next/link";
 import { ShareBar } from "@/components/ShareBar";
+import { CertificateViewTracker } from "@/components/Tracking";
 import { decodeSlug } from "@/lib/cert-routes";
 import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
@@ -55,6 +57,7 @@ async function CertificateBody({ params }: { params: Params }) {
       />
       {!inReview && (
         <div className="mt-5">
+          <CertificateViewTracker slug={cert.slug} />
           <ShareBar slug={cert.slug} text={shareText(cert)} siteUrl={siteUrl()} />
         </div>
       )}
@@ -63,9 +66,14 @@ async function CertificateBody({ params }: { params: Params }) {
           Is your title taken?
         </h2>
         <div className="mt-3">
-          <SearchBox autoFocus refSlug={cert.slug} label="Search your own World's Best title" />
+          <SearchBox source="certificate" autoFocus refSlug={cert.slug} label="Search your own World's Best title" />
         </div>
       </section>
+      <p className="mt-10 text-center text-sm">
+        <Link href={`/report?${new URLSearchParams({ c: cert.slug }).toString()}`} className="text-neutral-600 underline underline-offset-4 dark:text-neutral-400">
+          Report this page
+        </Link>
+      </p>
     </>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import type { SearchSource } from "@/lib/analytics";
+import { track } from "@/lib/analytics-client";
 import type { CheckResult } from "@/lib/check";
-import { TITLE_MAX_LENGTH, TITLE_PREFIX } from "@/lib/titles";
+import { TITLE_MAX_LENGTH, TITLE_PREFIX, type Tier } from "@/lib/titles";
 import { ResultCard, type SearchState } from "@/components/ResultCard";
 
 const DEBOUNCE_MS = 250;
@@ -12,7 +14,9 @@ export function SearchBox({
   label = "Search a title",
   refSlug,
   initialValue = "",
+  source,
 }: {
+  source: SearchSource;
   autoFocus?: boolean;
   label?: string;
   /** Slug of the certificate this search box sits on, for loop attribution. */
@@ -46,7 +50,13 @@ export function SearchBox({
           setState({ kind: "error", message });
           return;
         }
-        setState({ kind: "result", result: body as CheckResult });
+        const result = body as CheckResult;
+        setState({ kind: "result", result });
+        track("title_searched", {
+          result: result.status === "not_allowed" ? "blocked" : result.status,
+          tier: result.status === "not_allowed" ? null : result.title.tier,
+          source,
+        });
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         setState({ kind: "error", message: "Try again in a moment." });
@@ -56,9 +66,10 @@ export function SearchBox({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [value]);
+  }, [value, source]);
 
-  const focusAtEnd = (text: string) => {
+  const focusAtEnd = (text: string, tier: Tier | null = null) => {
+    track("variant_clicked", { tier });
     setValue(text);
     requestAnimationFrame(() => {
       const el = inputRef.current;

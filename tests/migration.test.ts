@@ -7,7 +7,7 @@ import { findBlockedTerm, normalizeTitleKey } from "@/lib/titles";
 
 const root = path.resolve(__dirname, "..");
 const read = (p: string) => readFileSync(path.join(root, p), "utf8");
-const MIGRATION = read("supabase/migrations/0001_init.sql");
+const MIGRATION = read("supabase/migrations/0001_init.sql") + "\n" + read("supabase/migrations/0002_admin_analytics.sql");
 const SEED_TIERS = read("supabase/seed/tier_titles.sql");
 const SEED_BLOCKED = read("supabase/seed/blocked_terms.sql");
 

@@ -81,7 +81,7 @@ export default function Home() {
       <header>
         <h1 className="text-3xl font-bold leading-tight sm:text-4xl">{HEADLINE}</h1>
         <div className="mt-5">
-          <SearchBox label="Search a World's Best title" />
+          <SearchBox source="home" label="Search a World's Best title" />
         </div>
       </header>
 

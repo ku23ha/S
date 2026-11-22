@@ -37,6 +37,8 @@ export const ClaimInput = z
       .pipe(z.email("Enter a valid email address.")),
     addonPrint: z.boolean().default(false),
     refSlug: z.string().max(200).optional(),
+    /** Anonymous analytics session id, so server events join the browser funnel. */
+    analyticsId: z.string().max(200).regex(/^[\w.:-]+$/).optional(),
   })
   .superRefine((v, ctx) => {
     if (!v.addonPrint && [...v.dedication].length > DEDICATION_MAX) {
