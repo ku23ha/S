@@ -27,6 +27,8 @@ Status as of Milestone 6 (2026-11-22). "Local" means verified with the local dat
 Also verified in Milestone 6: no error-level logs during a full claim (e2e claim.spec, browser console and server output), content security policy and security headers on every path, no secrets or private column names in browser bundles, error logs redact emails and tokens, the payment stub, local database and dev email are never used in production.
 
 ## Deployment checklist
+Step-by-step instructions for each item are in docs/DEPLOY.md. Prepared in code: migration script (`npm run db:migrate`), environment check (`scripts/check-env.mjs`), health endpoint (`/api/health`), live/test key guard, About, Refunds, Terms and Privacy pages (review the wording before launch).
+
 - [ ] Payment provider account approved for this product category, in writing
 - [ ] Live products created for the three tiers and the add-on; ids in production environment
 - [ ] Webhook endpoint registered with the live secret

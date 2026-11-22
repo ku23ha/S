@@ -38,6 +38,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </header>
         <div className="flex-1">{children}</div>
         <footer className="border-t border-black/10 px-4 py-6 text-center text-sm text-neutral-600 dark:border-white/10 dark:text-neutral-400">
+          <nav aria-label="Site" className="mb-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <Link href="/about" className="underline-offset-4 hover:underline">
+              About
+            </Link>
+            <Link href="/refunds" className="underline-offset-4 hover:underline">
+              Refunds
+            </Link>
+            <Link href="/terms" className="underline-offset-4 hover:underline">
+              Terms
+            </Link>
+            <Link href="/privacy" className="underline-offset-4 hover:underline">
+              Privacy
+            </Link>
+          </nav>
           <p>{DISCLAIMER}</p>
         </footer>
       </body>

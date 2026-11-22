@@ -108,10 +108,22 @@ export function parseDodoWebhook(secret: string, rawBody: string, headers: Heade
   return { kind: "ignored", eventId, type: env.type };
 }
 
+/**
+ * Refuse a test key in live mode and a live key in test mode. Dodo keys
+ * start with dodo_test_ or dodo_live_; other formats are not checked.
+ */
+export function assertKeyMatchesMode(apiKey: string, mode: string | undefined): void {
+  const live = mode === "live";
+  if (live && apiKey.startsWith("dodo_test_")) throw new Error("PAYMENTS_MODE=live but DODO_API_KEY is a test key");
+  if (!live && apiKey.startsWith("dodo_live_")) throw new Error("DODO_API_KEY is a live key but PAYMENTS_MODE is not live");
+}
+
 export function createDodoProvider(): PaymentProvider {
   const secret = requireEnv("DODO_WEBHOOK_SECRET");
+  const apiKey = requireEnv("DODO_API_KEY");
+  assertKeyMatchesMode(apiKey, process.env.PAYMENTS_MODE);
   const client = new DodoPayments({
-    bearerToken: requireEnv("DODO_API_KEY"),
+    bearerToken: apiKey,
     environment: process.env.PAYMENTS_MODE === "live" ? "live_mode" : "test_mode",
   });
 
