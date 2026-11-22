@@ -9,6 +9,7 @@ The World's Best Registry. One holder per "World's Best ___" title. See docs/PRD
 - npm run e2e: Playwright
 - npm run typecheck: tsc --noEmit
 - npm run lint: ESLint
+- npm run db:fixtures: sample claims in the local .pglite database (dev only)
 
 ## Rules
 - Read docs/ before changing behaviour. docs/PRD.md wins conflicts, then docs/DATA_MODEL.md.

@@ -16,6 +16,12 @@ The browser pays on Dodo's hosted page, and only Dodo's signed webhook can turn 
 
 Verify on the day: Vercel's current plan terms, and Supabase's free-tier pausing rule for inactive projects.
 
+## Database access
+- Server code talks to Postgres through `src/lib/db.ts` with node-postgres (`pg`) and `DATABASE_URL`, the Supabase **shared pooler in transaction mode** (port 6543; copy the host from the Connect dialog). The `postgres` role bypasses RLS, like the service role, so RLS with no policies keeps the anon API closed while server code works.
+- Per Supabase's serverless guidance: one connection per instance, SSL required, no named (prepared) statements, no session state across transactions. postgres.js was not used because Supabase documents query pipelining problems with it in transaction mode.
+- Without `DATABASE_URL` in development, `db.ts` uses an embedded PGlite database in `.pglite/`, migrated and seeded on first use. `npm run db:fixtures` adds sample claims for checking pages by eye (stop the dev server first). Tests use in-memory PGlite.
+- Next.js runs with Cache Components: any component that reads the database calls `connection()` and sits inside `<Suspense>`.
+
 ## Folder structure
 ```
 CLAUDE.md

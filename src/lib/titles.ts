@@ -216,6 +216,25 @@ function reject(reason: TitleRejectReason): TitleParseResult {
   return { ok: false, reason, message: REJECT_MESSAGES[reason] };
 }
 
+export type ContactDetail = "url" | "email" | "phone" | "handle";
+
+/** Detect a URL, email, phone number or @handle in any free-text field. */
+export function findContactDetail(text: string): ContactDetail | null {
+  const cleaned = cleanInput(text);
+  if (EMAIL_RE.test(cleaned)) return "email";
+  if (URL_RE.test(cleaned)) return "url";
+  if (HANDLE_RE.test(cleaned)) return "handle";
+  if (PHONE_RE.test(cleaned)) return "phone";
+  return null;
+}
+
+export const CONTACT_DETAIL_MESSAGES: Readonly<Record<ContactDetail, string>> = {
+  url: "Web addresses aren't allowed here.",
+  email: "Email addresses aren't allowed here.",
+  phone: "Phone numbers aren't allowed here.",
+  handle: "@handles aren't allowed here.",
+};
+
 /**
  * Validate a user's title remainder (the part after "World's Best") and
  * derive its key, display and slug. A leading "World's Best" typed by the
@@ -225,10 +244,8 @@ export function parseTitle(raw: string, blockedTerms: Iterable<string>): TitlePa
   const cleaned = stripPrefix(cleanInput(raw));
 
   // Contact details first, on the text before punctuation is removed.
-  if (EMAIL_RE.test(cleaned)) return reject("email");
-  if (URL_RE.test(cleaned)) return reject("url");
-  if (HANDLE_RE.test(cleaned)) return reject("handle");
-  if (PHONE_RE.test(cleaned)) return reject("phone");
+  const contact = findContactDetail(cleaned);
+  if (contact) return reject(contact);
 
   const remainder = stripPunctuation(cleaned);
   if (codePointLength(remainder) > TITLE_MAX_LENGTH) return reject("too_long");

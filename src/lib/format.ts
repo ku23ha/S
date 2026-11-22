@@ -1,0 +1,48 @@
+/** Display helpers safe for both server and client code. */
+import type { PublicHolder } from "@/lib/queries";
+import { TITLE_PREFIX } from "@/lib/titles";
+
+export function fullTitle(display: string): string {
+  return `${TITLE_PREFIX} ${display}`;
+}
+
+/** "No. 000482". Numbers above 999999 simply grow. */
+export function formatRegistryNo(n: number | null | undefined): string {
+  return n == null ? "" : `No. ${String(n).padStart(6, "0")}`;
+}
+
+/** "21 November 2026", in UTC so server and client agree. */
+export function formatDate(d: Date | string | null | undefined): string {
+  if (!d) return "";
+  const date = typeof d === "string" ? new Date(d) : d;
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(date);
+}
+
+export function formatPrice(cents: number): string {
+  return cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`;
+}
+
+/** Certificate path; slugs may hold non-Latin letters, so encode them. */
+export function certificatePath(slug: string): string {
+  return `/c/${encodeURIComponent(slug)}`;
+}
+
+export interface RegistryCard {
+  slug: string;
+  titleDisplay: string;
+  recipientName: string;
+  registryNo: number | null;
+  claimedAt: string | null;
+  tier: PublicHolder["tier"];
+}
+
+export function toRegistryCard(h: PublicHolder): RegistryCard {
+  return {
+    slug: h.slug,
+    titleDisplay: h.titleDisplay,
+    recipientName: h.recipientName,
+    registryNo: h.registryNo,
+    claimedAt: h.claimedAt ? h.claimedAt.toISOString() : null,
+    tier: h.tier,
+  };
+}
