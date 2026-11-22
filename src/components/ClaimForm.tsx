@@ -1,9 +1,43 @@
 "use client";
 
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useState } from "react";
 import { ClaimInput, DEDICATION_MAX, DEDICATION_MAX_WITH_PRINT, NAME_MAX } from "@/lib/claim";
 import { formatPrice } from "@/lib/format";
 import { PRINT_ADDON_CENTS } from "@/lib/titles";
+
+function remaining(untilIso: string, now: number): string {
+  const ms = Math.max(0, new Date(untilIso).getTime() - now);
+  const m = Math.floor(ms / 60_000);
+  const s = Math.floor((ms % 60_000) / 1000);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+/** The buyer's own hold, shown only after checkout has started. */
+function HeldPanel({ checkoutUrl, reservedUntil }: { checkoutUrl: string; reservedUntil: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const left = remaining(reservedUntil, now);
+  const expired = left === "0:00";
+  return (
+    <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-neutral-900" role="status">
+      {expired ? (
+        <p>Your hold has ended. If you finished paying, we&apos;ll still complete the claim or refund you.</p>
+      ) : (
+        <>
+          <p>
+            This title is held for you for <span className="font-semibold tabular-nums">{left}</span> while you pay.
+          </p>
+          <a href={checkoutUrl} className="mt-3 inline-block font-semibold underline">
+            Continue to payment
+          </a>
+        </>
+      )}
+    </div>
+  );
+}
 
 type FieldErrors = Partial<Record<"recipientName" | "giverName" | "dedication" | "email" | "form", string>>;
 
@@ -28,6 +62,7 @@ export function ClaimForm({
   const [addonPrint, setAddonPrint] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [held, setHeld] = useState<{ checkoutUrl: string; reservedUntil: string } | null>(null);
 
   const dedicationMax = addonPrint ? DEDICATION_MAX_WITH_PRINT : DEDICATION_MAX;
   const total = basePriceCents + (addonPrint ? PRINT_ADDON_CENTS : 0);
@@ -63,22 +98,33 @@ export function ClaimForm({
         body: JSON.stringify(parsed.data),
       });
       const body: unknown = await res.json().catch(() => null);
-      if (res.ok && typeof body === "object" && body !== null && "checkoutUrl" in body && typeof body.checkoutUrl === "string") {
+      if (
+        res.ok &&
+        typeof body === "object" &&
+        body !== null &&
+        "checkoutUrl" in body &&
+        typeof body.checkoutUrl === "string" &&
+        "reservedUntil" in body &&
+        typeof body.reservedUntil === "string"
+      ) {
+        setHeld({ checkoutUrl: body.checkoutUrl, reservedUntil: body.reservedUntil });
         window.location.assign(body.checkoutUrl);
         return;
       }
       const message =
-        res.status === 404
-          ? "Checkout isn't open yet."
-          : typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
-            ? body.error
-            : "Something went wrong. Please try again.";
+        typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
+          ? body.error
+          : "Something went wrong. Please try again.";
       setErrors({ form: message });
     } catch {
       setErrors({ form: "Something went wrong. Please try again." });
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (held) {
+    return <HeldPanel checkoutUrl={held.checkoutUrl} reservedUntil={held.reservedUntil} />;
   }
 
   const input =

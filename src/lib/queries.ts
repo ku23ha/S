@@ -138,6 +138,19 @@ export async function getCertificateBySlug(db: Db, slug: string): Promise<Public
   return rows[0] ? toHolder(rows[0]) : null;
 }
 
+export interface TitleStatusView extends Omit<PublicHolder, "status"> {
+  status: "reserved" | "claimed" | "in_review" | "rejected" | "removed" | "expired";
+}
+
+/** Any row by id, for the success page. Public fields only. */
+export async function getTitleById(db: Db, id: string): Promise<TitleStatusView | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const rows = await db.query<HolderRow>(`select ${HOLDER_COLUMNS} from titles where id = $1`, [id]);
+  const r = rows[0];
+  if (!r) return null;
+  return { ...toHolder(r), status: r.status as TitleStatusView["status"] };
+}
+
 export async function countClaimed(db: Db): Promise<number> {
   const rows = await db.query<{ c: number }>(`select count(*)::int as c from titles where status = 'claimed'`);
   return rows[0]?.c ?? 0;

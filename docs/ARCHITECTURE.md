@@ -22,6 +22,13 @@ Verify on the day: Vercel's current plan terms, and Supabase's free-tier pausing
 - Without `DATABASE_URL` in development, `db.ts` uses an embedded PGlite database in `.pglite/`, migrated and seeded on first use. `npm run db:fixtures` adds sample claims for checking pages by eye (stop the dev server first). Tests use in-memory PGlite.
 - Next.js runs with Cache Components: any component that reads the database calls `connection()` and sits inside `<Suspense>`.
 
+## Payments and email
+- `src/lib/payments/index.ts` is the provider interface: create a hosted checkout from a tier (never an amount), parse a signed webhook into a normalised event, refund a payment. `dodo.ts` implements it with the `dodopayments` SDK (`checkoutSessions.create`, `refunds.create`) and verifies webhooks with `standardwebhooks`. The `webhook-id` header is the idempotency key stored in `webhook_events`.
+- Each tier and the print add-on is a fixed-price Dodo product (`DODO_PRODUCT_*`). Checkout sends `metadata.title_id`; the webhook matches on it, falling back to `checkout_session_id`, because Dodo's docs don't say whether session metadata is copied to the payment.
+- Refunds and chargebacks: `refund.succeeded`, `dispute.lost` and `dispute.accepted` set the title to `removed` (freed; its registry number stays retired). `dispute.opened` is recorded but changes nothing, since the dispute may still be won.
+- Without Dodo keys in development, `stub.ts` stands in: its checkout URL is `/dev/checkout`, which signs a Dodo-shaped `payment.succeeded` event and sends it through the real webhook route. Never active in production.
+- `src/lib/email.ts` sends with Resend using an idempotency key per title (`claim/<id>`, `refund/<id>`), three attempts. Without `RESEND_API_KEY` in development, emails are recorded and only the subject is logged.
+
 ## Folder structure
 ```
 CLAUDE.md
