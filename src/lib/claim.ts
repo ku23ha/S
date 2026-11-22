@@ -49,3 +49,19 @@ export const ClaimInput = z
   });
 
 export type ClaimInput = z.infer<typeof ClaimInput>;
+
+/** Fields the buyer may correct within 24 hours using the manage link. */
+export const ManageInput = z.object({
+  recipientName: freeText("The name", NAME_MAX).refine((s) => s.length > 0, "Enter who this title is for."),
+  giverName: freeText("The from line", NAME_MAX).optional().default(""),
+  dedication: freeText("The dedication", DEDICATION_MAX_WITH_PRINT).optional().default(""),
+});
+
+export type ManageInput = z.infer<typeof ManageInput>;
+
+export const EDIT_WINDOW_HOURS = 24;
+
+export function canEdit(claimedAt: Date | string | null, now = Date.now()): boolean {
+  if (!claimedAt) return false;
+  return now - new Date(claimedAt).getTime() < EDIT_WINDOW_HOURS * 3600 * 1000;
+}

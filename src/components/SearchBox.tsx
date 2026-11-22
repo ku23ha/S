@@ -24,6 +24,11 @@ export function SearchBox({
   const [value, setValue] = useState(initialValue);
   const [state, setState] = useState<SearchState>({ kind: "empty" });
 
+  // Focus without scrolling, so a certificate above the box stays in view.
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus({ preventScroll: true });
+  }, [autoFocus]);
+
   useEffect(() => {
     const q = value.trim();
     if (q === "") return;
@@ -81,7 +86,6 @@ export function SearchBox({
           autoCapitalize="words"
           spellCheck={false}
           enterKeyHint="search"
-          autoFocus={autoFocus}
           maxLength={TITLE_MAX_LENGTH + 20}
           value={value}
           onChange={(e) => setValue(e.target.value)}

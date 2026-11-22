@@ -4,26 +4,41 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
 import { SearchBox } from "@/components/SearchBox";
-import { PRODUCT_NAME } from "@/lib/copy";
+import { ShareBar } from "@/components/ShareBar";
+import { decodeSlug } from "@/lib/cert-routes";
+import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
+import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getCertificateBySlug } from "@/lib/queries";
-
-export const metadata: Metadata = { title: `Certificate · ${PRODUCT_NAME}` };
+import { siteUrl } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
 
-function decodeSlug(raw: string): string {
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
-  }
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  await connection();
+  const { slug } = await params;
+  const cert = await getCertificateBySlug(await getDb(), decodeSlug(slug)).catch(() => null);
+  if (!cert) return { title: `Certificate · ${PRODUCT_NAME}`, robots: { index: false } };
+
+  const inReview = cert.status === "in_review";
+  const title = inReview ? fullTitle(cert.titleDisplay) : `${fullTitle(cert.titleDisplay)}: ${cert.recipientName}`;
+  const description = inReview
+    ? `This certificate is in review. ${DISCLAIMER}`
+    : `${shareText(cert)} ${DISCLAIMER}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: certificatePath(cert.slug) },
+    robots: inReview ? { index: false } : undefined,
+    openGraph: { title, description, type: "website", siteName: PRODUCT_NAME, url: certificatePath(cert.slug) },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 async function CertificateBody({ params }: { params: Params }) {
   await connection();
   const { slug } = await params;
-  const cert = await getCertificateBySlug(await getDb(), decodeSlug(slug).slice(0, 200));
+  const cert = await getCertificateBySlug(await getDb(), decodeSlug(slug));
   if (!cert) notFound();
 
   const inReview = cert.status === "in_review";
@@ -38,6 +53,11 @@ async function CertificateBody({ params }: { params: Params }) {
         dedication={cert.dedication}
         inReview={inReview}
       />
+      {!inReview && (
+        <div className="mt-5">
+          <ShareBar slug={cert.slug} text={shareText(cert)} siteUrl={siteUrl()} />
+        </div>
+      )}
       <section aria-labelledby="your-title" className="mt-10">
         <h2 id="your-title" className="text-xl font-semibold">
           Is your title taken?

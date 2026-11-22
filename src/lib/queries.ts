@@ -3,6 +3,7 @@
  * tests can pass a PGlite instance; callers in routes use getDb().
  * Never select buyer_email or manage_token into public results.
  */
+import { timingSafeEqual } from "node:crypto";
 import type { Db } from "@/lib/db";
 import type { ListedTier, Tier } from "@/lib/titles";
 
@@ -149,6 +150,33 @@ export async function getTitleById(db: Db, id: string): Promise<TitleStatusView 
   const r = rows[0];
   if (!r) return null;
   return { ...toHolder(r), status: r.status as TitleStatusView["status"] };
+}
+
+export interface PrivateTitle extends PublicHolder {
+  manageToken: string;
+  addonPrint: boolean;
+}
+
+/**
+ * A claimed or in-review row looked up by its manage token, compared in
+ * constant time. For the manage page and print downloads only.
+ */
+export async function getTitleByManageToken(db: Db, token: string): Promise<PrivateTitle | null> {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+  const rows = await db.query<HolderRow & { manage_token: string; addon_print: boolean }>(
+    `select ${HOLDER_COLUMNS}, manage_token, addon_print from titles
+     where manage_token = $1 and status in ('claimed','in_review') limit 1`,
+    [token],
+  );
+  const r = rows[0];
+  if (!r || !tokensEqual(r.manage_token, token)) return null;
+  return { ...toHolder(r), manageToken: r.manage_token, addonPrint: r.addon_print };
+}
+
+function tokensEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
 export async function countClaimed(db: Db): Promise<number> {

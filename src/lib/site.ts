@@ -5,3 +5,8 @@ export function siteUrl(request?: Request): string {
   if (request) return new URL(request.url).origin;
   return "http://localhost:3000";
 }
+
+/** Host name for printing on images, e.g. "theworlds.best". */
+export function siteHost(request?: Request): string {
+  return new URL(siteUrl(request)).host;
+}

@@ -7,8 +7,10 @@ import { Certificate } from "@/components/Certificate";
 import { SearchBox } from "@/components/SearchBox";
 import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
-import { certificatePath, fullTitle } from "@/lib/format";
+import { ShareBar } from "@/components/ShareBar";
+import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getTitleById } from "@/lib/queries";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: `Thank you · ${PRODUCT_NAME}`, robots: { index: false } };
 
@@ -66,12 +68,12 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
           inReview={inReview}
         />
         {!inReview && (
-          <Link
-            href={certificatePath(t.slug)}
-            className="rounded-xl bg-neutral-900 px-5 py-4 text-center text-lg font-semibold text-white dark:bg-white dark:text-neutral-900"
-          >
-            Open the certificate page
-          </Link>
+          <>
+            <ShareBar slug={t.slug} text={shareText(t)} siteUrl={siteUrl()} />
+            <Link href={certificatePath(t.slug)} className="text-center underline underline-offset-4">
+              Open the certificate page
+            </Link>
+          </>
         )}
         <section aria-labelledby="another">
           <h2 id="another" className="text-lg font-semibold">

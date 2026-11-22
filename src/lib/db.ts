@@ -7,7 +7,7 @@
  * queries here never pass a `name`), no session state between transactions.
  *
  * Local development without DATABASE_URL: an embedded PGlite database in
- * .pglite/, migrated and seeded on first use. Tests inject their own Db.
+ * node_modules/.cache/wbr-pglite, migrated and seeded on first use. Tests inject their own Db.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -118,10 +118,18 @@ export async function ensureSchema(pg: PGliteLike, root?: string): Promise<void>
   for (const sql of schemaSql(root)) await pg.exec(sql);
 }
 
+/**
+ * Kept under node_modules/.cache so the dev server's file watcher ignores it;
+ * inside the project tree every write would trigger a rebuild.
+ */
+export function localDbDir(): string {
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), "node_modules", ".cache", "wbr-pglite");
+}
+
 async function createLocalDb(): Promise<Db> {
   const { PGlite } = await import("@electric-sql/pglite");
   const { pgcrypto } = await import("@electric-sql/pglite/contrib/pgcrypto");
-  const pg = new PGlite(path.join(/*turbopackIgnore: true*/ process.cwd(), ".pglite"), { extensions: { pgcrypto } });
+  const pg = new PGlite(localDbDir(), { extensions: { pgcrypto } });
   await ensureSchema(pg);
   return wrapPGlite(pg);
 }

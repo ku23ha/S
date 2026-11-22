@@ -12,7 +12,7 @@ if (process.env.DATABASE_URL) {
 }
 
 const root = process.cwd();
-const dir = path.join(root, ".pglite");
+const dir = path.join(root, "node_modules", ".cache", "wbr-pglite");
 if (process.argv.includes("--reset") && existsSync(dir)) rmSync(dir, { recursive: true, force: true });
 
 const pg = new PGlite(dir, { extensions: { pgcrypto } });
@@ -50,5 +50,5 @@ await pg.query(
    where not exists (select 1 from titles where title_key = 'uncle' and status in ('reserved','claimed','in_review'))`,
 );
 const count = await pg.query(`select count(*)::int as c from titles`);
-console.log(`Local fixtures ready: ${count.rows[0].c} rows in .pglite`);
+console.log(`Local fixtures ready: ${count.rows[0].c} rows in ${dir}`);
 await pg.close();

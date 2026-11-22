@@ -2,19 +2,13 @@
 
 import Link from "next/link";
 import type { CheckResult, CheckVariant } from "@/lib/check";
-import { certificatePath, formatDate, formatPrice, formatRegistryNo, fullTitle } from "@/lib/format";
+import { certificatePath, claimHref, formatDate, formatPrice, formatRegistryNo, fullTitle } from "@/lib/format";
 
 export type SearchState =
   | { kind: "empty" }
   | { kind: "checking" }
   | { kind: "error"; message: string }
   | { kind: "result"; result: CheckResult };
-
-function claimHref(display: string, refSlug?: string): string {
-  const p = new URLSearchParams({ title: display });
-  if (refSlug) p.set("ref", refSlug);
-  return `/claim?${p.toString()}`;
-}
 
 function Variants({
   variants,

@@ -27,6 +27,19 @@ export function certificatePath(slug: string): string {
   return `/c/${encodeURIComponent(slug)}`;
 }
 
+/** "Priya is the only World's Best Sunny Mom. No. 000006 in The World's Best Registry." */
+export function shareText(h: { recipientName: string; titleDisplay: string; registryNo: number | null }): string {
+  const no = h.registryNo != null ? ` ${formatRegistryNo(h.registryNo)} in The World's Best Registry.` : "";
+  return `${h.recipientName} is the only ${fullTitle(h.titleDisplay)}.${no}`;
+}
+
+/** Link to the claim page for a title, carrying the certificate that led there. */
+export function claimHref(display: string, refSlug?: string | null): string {
+  const p = new URLSearchParams({ title: display });
+  if (refSlug) p.set("ref", refSlug);
+  return `/claim?${p.toString()}`;
+}
+
 export interface RegistryCard {
   slug: string;
   titleDisplay: string;

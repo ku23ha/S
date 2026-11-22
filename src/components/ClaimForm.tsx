@@ -3,6 +3,7 @@
 import { type FormEvent, useEffect, useId, useState } from "react";
 import { ClaimInput, DEDICATION_MAX, DEDICATION_MAX_WITH_PRINT, NAME_MAX } from "@/lib/claim";
 import { formatPrice } from "@/lib/format";
+import { getSessionRef } from "@/lib/session-ref";
 import { PRINT_ADDON_CENTS } from "@/lib/titles";
 
 function remaining(untilIso: string, now: number): string {
@@ -76,7 +77,7 @@ export function ClaimForm({
       dedication,
       email,
       addonPrint,
-      refSlug,
+      refSlug: refSlug || getSessionRef() || undefined,
     });
     if (!parsed.success) {
       const next: FieldErrors = {};

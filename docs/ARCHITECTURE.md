@@ -19,7 +19,7 @@ Verify on the day: Vercel's current plan terms, and Supabase's free-tier pausing
 ## Database access
 - Server code talks to Postgres through `src/lib/db.ts` with node-postgres (`pg`) and `DATABASE_URL`, the Supabase **shared pooler in transaction mode** (port 6543; copy the host from the Connect dialog). The `postgres` role bypasses RLS, like the service role, so RLS with no policies keeps the anon API closed while server code works.
 - Per Supabase's serverless guidance: one connection per instance, SSL required, no named (prepared) statements, no session state across transactions. postgres.js was not used because Supabase documents query pipelining problems with it in transaction mode.
-- Without `DATABASE_URL` in development, `db.ts` uses an embedded PGlite database in `.pglite/`, migrated and seeded on first use. `npm run db:fixtures` adds sample claims for checking pages by eye (stop the dev server first). Tests use in-memory PGlite.
+- Without `DATABASE_URL` in development, `db.ts` uses an embedded PGlite database in `node_modules/.cache/wbr-pglite` (outside the watched tree, so writes don't trigger rebuilds), migrated and seeded on first use. `npm run db:fixtures` adds sample claims for checking pages by eye (stop the dev server first). Tests use in-memory PGlite.
 - Next.js runs with Cache Components: any component that reads the database calls `connection()` and sits inside `<Suspense>`.
 
 ## Payments and email
@@ -28,6 +28,12 @@ Verify on the day: Vercel's current plan terms, and Supabase's free-tier pausing
 - Refunds and chargebacks: `refund.succeeded`, `dispute.lost` and `dispute.accepted` set the title to `removed` (freed; its registry number stays retired). `dispute.opened` is recorded but changes nothing, since the dispute may still be won.
 - Without Dodo keys in development, `stub.ts` stands in: its checkout URL is `/dev/checkout`, which signs a Dodo-shaped `payment.succeeded` event and sends it through the real webhook route. Never active in production.
 - `src/lib/email.ts` sends with Resend using an idempotency key per title (`claim/<id>`, `refund/<id>`), three attempts. Without `RESEND_API_KEY` in development, emails are recorded and only the subject is logged.
+
+## Certificate images and the loop
+- `src/lib/cert-image.tsx` draws every image with next/og: the 1200x630 share image (`/c/[slug]/opengraph-image`), the 1080x1920 story (`/api/cert/[slug]/story`) and 300 dpi A4 / US Letter print files (`/api/cert/[slug]/print?token=&size=`, add-on buyers only, manage token required). All carry the disclaimer line.
+- Fonts are bundled Noto files in `assets/fonts` (SIL OFL, see `OFL.txt`): Latin, Greek, Cyrillic, Devanagari, Bengali, Tamil. Emoji use Twemoji, fetched at render time. Satori cannot shape Indic conjuncts or pre-base vowel signs, so names that need shaping, or use other scripts, are left off the image with a pointer to the certificate page, which renders them correctly.
+- Attribution: when a browsing session starts on a certificate page, its slug is kept in `sessionStorage` and sent with the checkout as `refSlug`; certificate search links also carry `ref`. Checkout stores it as `ref_title_id`.
+- The manage page (`/manage/[token]`, linked from the buyer email) allows fixing the name, from line and dedication within 24 hours and serves the print downloads. It is `noindex` with `Referrer-Policy: no-referrer` so the token doesn't leak.
 
 ## Folder structure
 ```
