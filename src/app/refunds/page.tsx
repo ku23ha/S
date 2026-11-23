@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import { Contact, Prose } from "@/components/Prose";
 
-export const metadata: Metadata = { title: `Refunds and removal` };
+export const metadata: Metadata = { title: `Cancellation and refunds` };
 
 export default function RefundsPage() {
   return (
-    <Prose title="Refunds and removal" updated="22 November 2026">
+    <Prose title="Cancellation and refunds" updated="23 November 2026">
+      <h2>Cancelling</h2>
+      <p>
+        You can cancel any time before you pay: just close the checkout, and the title is released after 15 minutes. Because the
+        certificate is delivered instantly and the title is then held for your recipient alone, a completed claim can&apos;t be
+        cancelled for change of mind. If something went wrong, we fix it or refund you, as below.
+      </p>
       <h2>When you get a refund automatically</h2>
       <ul>
         <li>
@@ -37,7 +43,8 @@ export default function RefundsPage() {
 
       <h2>Other requests</h2>
       <p>
-        For anything else, including a refund request we haven&apos;t covered here, contact us at <Contact />. Payments are
+        For anything else, including a refund request we haven&apos;t covered here, contact us at <Contact /> within 30 days of
+        paying. Approved refunds are issued within 5 to 7 working days. Payments are
         handled by our payment provider, and refunds go back to the card or method you paid with. How long that takes depends on
         your bank.
       </p>

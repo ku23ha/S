@@ -15,6 +15,18 @@ export function isChristmasSeason(now = new Date()): boolean {
   return (m === 10 && d >= 15) || m === 11 || (m === 0 && d <= 6);
 }
 
+/**
+ * Business contact details for the contact page (payment providers require
+ * them). All optional; each line shows only when its env var is set.
+ */
+export function businessContact(): { name: string | null; address: string | null; phone: string | null } {
+  return {
+    name: process.env.NEXT_PUBLIC_BUSINESS_NAME?.trim() || null,
+    address: process.env.NEXT_PUBLIC_CONTACT_ADDRESS?.trim() || null,
+    phone: process.env.NEXT_PUBLIC_CONTACT_PHONE?.trim() || null,
+  };
+}
+
 /** Public contact address, set with NEXT_PUBLIC_CONTACT_EMAIL. */
 export function contactEmail(): string | null {
   return process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || null;

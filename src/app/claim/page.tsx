@@ -3,6 +3,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ClaimForm } from "@/components/ClaimForm";
+import { BeginCheckoutSignal } from "@/components/Marketing";
+import { CURRENCY } from "@/lib/titles";
 import { SearchBox } from "@/components/SearchBox";
 import { checkTitle } from "@/lib/check";
 import { getDb } from "@/lib/db";
@@ -98,6 +100,7 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
           claimed, no one else can hold this title.
         </p>
       </header>
+      <BeginCheckoutSignal value={t.priceCents / 100} currency={CURRENCY} />
       <ClaimForm
         titleDisplay={t.display}
         basePriceCents={t.priceCents}

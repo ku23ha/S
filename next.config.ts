@@ -8,14 +8,19 @@ const isDev = process.env.NODE_ENV !== "production";
  * because Next's bootstrap needs them; all user text is escaped by React.
  * PostHog domains per posthog.com/docs/libraries/next-js. Payment happens on
  * Dodo's hosted page by full navigation, so it needs no entry here.
+ * Google (GA4, Ads) and Meta Pixel domains are listed for the ad tags, which
+ * load only after cookie consent (src/components/Marketing.tsx).
  */
+const GOOGLE = "https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://*.g.doubleclick.net";
+const META = "https://connect.facebook.net https://www.facebook.com";
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://*.posthog.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://*.posthog.com ${GOOGLE} ${META}${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' blob: data:",
+  `img-src 'self' blob: data: ${GOOGLE} ${META}`,
   "font-src 'self'",
-  "connect-src 'self' https://*.posthog.com",
+  `connect-src 'self' https://*.posthog.com ${GOOGLE} ${META}`,
+  `frame-src ${GOOGLE} ${META}`,
   "worker-src 'self' blob: data:",
   "object-src 'none'",
   "base-uri 'self'",

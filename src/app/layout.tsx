@@ -3,6 +3,8 @@ import { Fraunces, Inter } from "next/font/google";
 import Link from "next/link";
 import { type ReactNode, Suspense } from "react";
 import { SessionRef } from "@/components/SessionRef";
+import { GiftHelper } from "@/components/GiftHelper";
+import { ConsentBanner, CookieSettingsLink, MarketingTags } from "@/components/Marketing";
 import { PageViewTracker } from "@/components/Tracking";
 import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "@/lib/copy";
 import { siteUrl } from "@/lib/site";
@@ -48,6 +50,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <SessionRef />
         <Suspense fallback={null}>
           <PageViewTracker />
+          <MarketingTags />
+          <GiftHelper />
         </Suspense>
         <header className="sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur">
           <nav className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3">
@@ -56,7 +60,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/registry" className="hidden text-ink-soft hover:text-ink sm:inline">
                 The registry
               </Link>
-              <Link href="/#pricing" className="hidden text-ink-soft hover:text-ink sm:inline">
+              <Link href="/pricing" className="hidden text-ink-soft hover:text-ink sm:inline">
                 Pricing
               </Link>
               <Link href="/gifts" className="hidden text-ink-soft hover:text-ink sm:inline">
@@ -91,7 +95,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/registry?tab=iconic" className="text-ink-soft hover:text-ink">
                 Iconic titles
               </Link>
-              <Link href="/#pricing" className="text-ink-soft hover:text-ink">
+              <Link href="/pricing" className="text-ink-soft hover:text-ink">
                 Pricing
               </Link>
               <Link href="/gifts" className="text-ink-soft hover:text-ink">
@@ -103,8 +107,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/about" className="text-ink-soft hover:text-ink">
                 About
               </Link>
+              <Link href="/contact" className="text-ink-soft hover:text-ink">
+                Contact us
+              </Link>
               <Link href="/refunds" className="text-ink-soft hover:text-ink">
-                Refunds
+                Cancellation and refunds
+              </Link>
+              <Link href="/delivery" className="text-ink-soft hover:text-ink">
+                Delivery policy
               </Link>
               <Link href="/terms" className="text-ink-soft hover:text-ink">
                 Terms
@@ -112,10 +122,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/privacy" className="text-ink-soft hover:text-ink">
                 Privacy
               </Link>
+              <CookieSettingsLink className="text-left text-ink-soft hover:text-ink" />
             </nav>
           </div>
           <p className="border-t border-line px-4 py-5 text-center text-sm text-muted">{DISCLAIMER}</p>
         </footer>
+        <ConsentBanner />
       </body>
     </html>
   );

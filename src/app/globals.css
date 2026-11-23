@@ -182,3 +182,27 @@ body {
     transform: none;
   }
 }
+
+/* Success-page confetti: gold pieces fall once and are removed. */
+.confetti-piece {
+  position: absolute;
+  top: -24px;
+  opacity: 0.95;
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
+  animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(30px, 105vh, 0) rotate(540deg);
+    opacity: 0.85;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    display: none;
+  }
+}

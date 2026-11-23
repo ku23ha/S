@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { Confetti, WhoElse } from "@/components/Celebration";
 import { Certificate } from "@/components/Certificate";
 import { CertificateQr } from "@/components/CertificateQr";
 import { SearchBox } from "@/components/SearchBox";
@@ -12,7 +13,8 @@ import { ShopLinks } from "@/components/ShopLinks";
 import { isChristmasSeason } from "@/lib/copy";
 import { OwnerMark } from "@/components/Tracking";
 import { certificatePath, fullTitle, shareText } from "@/lib/format";
-import { getTitleById } from "@/lib/queries";
+import { PurchaseConversion } from "@/components/Marketing";
+import { getPaidAmount, getTitleById } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: `Thank you`, robots: { index: false } };
@@ -51,9 +53,12 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
 
   if (t.status === "claimed" || t.status === "in_review") {
     const inReview = t.status === "in_review";
+    const paid = await getPaidAmount(await getDb(), t.id).catch(() => null);
     return (
       <div className="flex flex-col gap-6">
         <OwnerMark slug={t.slug} />
+        {!inReview && <Confetti />}
+        {paid && <PurchaseConversion id={t.id} registryNo={t.registryNo} value={paid.cents / 100} currency={paid.currency} />}
         <div>
           <h1 className="text-2xl font-bold">{inReview ? "Payment received" : "It's theirs"}</h1>
           <p className="mt-1 text-neutral-700 dark:text-neutral-300">
@@ -75,6 +80,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
         {!inReview && (
           <>
             <ShareBar slug={t.slug} text={shareText(t)} siteUrl={siteUrl()} christmas={isChristmasSeason()} />
+            <WhoElse />
             <ShopLinks />
             <Link href={certificatePath(t.slug)} className="text-center underline underline-offset-4">
               Open the certificate page

@@ -279,3 +279,13 @@ export async function listIconic(db: Db): Promise<IconicEntry[]> {
   );
   return rows.map((r) => ({ titleKey: r.tier_key, holder: r.id ? toHolder(r) : null }));
 }
+
+/** What the buyer paid for a claim, for the ad-conversion value on the success page. */
+export async function getPaidAmount(db: Db, id: string): Promise<{ cents: number; currency: string } | null> {
+  const rows = await db.query<{ price_cents: number; currency: string }>(
+    `select price_cents, currency from titles where id = $1 and status in ('claimed','in_review')`,
+    [id],
+  );
+  const r = rows[0];
+  return r ? { cents: r.price_cents, currency: r.currency.toUpperCase() } : null;
+}

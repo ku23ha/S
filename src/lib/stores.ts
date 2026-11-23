@@ -20,6 +20,10 @@ const TAGS = {
   flipkart: process.env.NEXT_PUBLIC_FLIPKART_AFFID,
 } as const;
 
+export function hasAmazonTag(): boolean {
+  return Boolean(TAGS.amazon_in || TAGS.amazon_com);
+}
+
 export function hasAffiliateIds(): boolean {
   return Boolean(TAGS.amazon_in || TAGS.amazon_com || TAGS.flipkart);
 }

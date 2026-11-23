@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: `Privacy` };
 
 export default function PrivacyPage() {
   return (
-    <Prose title="Privacy" updated="22 November 2026">
+    <Prose title="Privacy" updated="23 November 2026">
       <p>
         {PRODUCT_NAME} keeps as little about you as it can. There are no accounts, no advertising trackers and no cookies for
         visitors.
@@ -44,6 +44,13 @@ export default function PrivacyPage() {
           request count for up to 30 days.
         </li>
         <li>
+          <strong>Ad measurement, only if you accept.</strong> If you choose &ldquo;Accept&rdquo; in the cookie banner, Google
+          (Analytics and Ads) and Meta set cookies so we can tell which ads lead to a claim. They receive the page address with
+          private parts removed and, on purchase, the amount and currency, never names, dedications or email addresses.
+          Choosing &ldquo;No thanks&rdquo; loads none of this. You can change your mind with &ldquo;Cookie settings&rdquo; in the
+          footer.
+        </li>
+        <li>
           <strong>Reports.</strong> If you report a page, we store your reason and, only if you give it, your email address so we
           can reply.
         </li>
@@ -53,9 +60,10 @@ export default function PrivacyPage() {
       <ul>
         <li>Vercel (hosting)</li>
         <li>Supabase (database)</li>
-        <li>Dodo Payments (checkout and payments)</li>
+        <li>Razorpay or Dodo Payments (checkout and payments)</li>
         <li>Resend (sending email)</li>
         <li>PostHog (anonymous usage events)</li>
+        <li>Google and Meta (ad measurement, only after you accept cookies)</li>
       </ul>
 
       <h2>Your choices</h2>

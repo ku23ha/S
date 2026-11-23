@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useId, useState } from "react";
 import { Certificate } from "@/components/Certificate";
+import { TONES, type Tone, dedicationTemplates } from "@/lib/helper";
 import {
   ClaimInput,
   DEDICATION_MAX,
@@ -92,6 +93,7 @@ export function ClaimForm({
   const [dedication, setDedication] = useState("");
   const [email, setEmail] = useState("");
   const [addonPrint, setAddonPrint] = useState(false);
+  const [tone, setTone] = useState<Tone | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [held, setHeld] = useState<{
@@ -275,6 +277,39 @@ export function ClaimForm({
               {[...dedication].length}/{dedicationMax}
             </span>
           </p>
+          <div className="mt-2">
+            <p className="text-sm text-neutral-600">Need words? Pick a tone, then tap a line to use it and make it yours.</p>
+            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Tone for suggested lines">
+              {TONES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={tone === t.id}
+                  onClick={() => setTone(tone === t.id ? null : t.id)}
+                  className={`rounded-full border px-3 py-1 text-sm transition ${
+                    tone === t.id ? "border-ink bg-ink text-paper" : "border-line bg-white hover:border-gold"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            {tone && (
+              <ul className="mt-2 flex flex-col gap-1.5">
+                {dedicationTemplates(tone, recipientName).map((line) => (
+                  <li key={line}>
+                    <button
+                      type="button"
+                      onClick={() => setDedication(line.slice(0, dedicationMax))}
+                      className="w-full rounded-lg border border-gold/40 bg-[#fffaf0] px-3 py-2 text-left text-sm hover:border-gold"
+                    >
+                      &ldquo;{line}&rdquo;
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           {errors.dedication && <p className={err}>{errors.dedication}</p>}
         </div>
 
@@ -342,7 +377,10 @@ export function ClaimForm({
           {submitting ? "Starting checkout…" : `Pay ${formatPrice(total)}`}
         </button>
         <p className="text-center text-sm text-neutral-500">
-          One-time payment on a secure checkout page. No account needed.
+          One-time payment on a secure checkout page. No account needed. Delivered instantly by email.{" "}
+          <a href="/refunds" className="underline underline-offset-2">
+            Refund policy
+          </a>
         </p>
       </form>
     </div>

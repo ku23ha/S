@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { track } from "@/lib/analytics-client";
-import { type GiftIdea, GIFT_SHELVES, STORES, type StoreId, hasAffiliateIds, storeSearchUrl } from "@/lib/stores";
+import { type GiftIdea, GIFT_SHELVES, STORES, type StoreId, hasAffiliateIds, hasAmazonTag, storeSearchUrl } from "@/lib/stores";
 
 const STORE_ORDER: StoreId[] = ["amazon_in", "flipkart", "myntra", "amazon_com"];
 
@@ -31,6 +31,8 @@ export function AffiliateNote() {
     <p className="text-xs text-muted">
       Links open the store&apos;s own site; we don&apos;t sell or ship these.
       {hasAffiliateIds() ? " We may earn a small commission from purchases, at no extra cost to you." : ""}
+      {/* Exact wording required by the Amazon Associates Operating Agreement. */}
+      {hasAmazonTag() ? " As an Amazon Associate I earn from qualifying purchases." : ""}
     </p>
   );
 }
