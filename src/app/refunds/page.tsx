@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Contact, Prose } from "@/components/Prose";
-import { PRODUCT_NAME } from "@/lib/copy";
 
-export const metadata: Metadata = { title: `Refunds and removal · ${PRODUCT_NAME}` };
+export const metadata: Metadata = { title: `Refunds and removal` };
 
 export default function RefundsPage() {
   return (

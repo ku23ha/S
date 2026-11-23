@@ -84,8 +84,8 @@ export function SearchBox({
       <label htmlFor={id} className="sr-only">
         {label}
       </label>
-      <div className="flex items-center rounded-xl border-2 border-neutral-900 bg-white focus-within:ring-4 focus-within:ring-amber-300 dark:border-neutral-200 dark:bg-neutral-950">
-        <span className="shrink-0 select-none pl-3 text-base font-semibold sm:text-lg" aria-hidden="true">
+      <div className="flex items-center rounded-2xl border-2 border-ink bg-white shadow-[0_6px_24px_-12px_rgba(28,25,23,0.35)] focus-within:ring-4 focus-within:ring-gold-soft">
+        <span className="shrink-0 select-none pl-4 font-display text-base font-semibold text-gold-deep sm:text-lg" aria-hidden="true">
           {TITLE_PREFIX}
         </span>
         <input
@@ -102,7 +102,7 @@ export function SearchBox({
           onChange={(e) => setValue(e.target.value)}
           placeholder="Dad"
           aria-describedby={`${id}-hint`}
-          className="min-w-0 flex-1 bg-transparent px-2 py-3 text-base outline-none placeholder:text-neutral-400 sm:text-lg"
+          className="min-w-0 flex-1 bg-transparent px-2 py-4 text-base outline-none placeholder:text-neutral-400 sm:text-lg"
         />
       </div>
       <p id={`${id}-hint`} className="sr-only">

@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { ReportForm } from "@/components/ReportForm";
-import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { fullTitle } from "@/lib/format";
 import { getCertificateBySlug } from "@/lib/queries";
 
-export const metadata: Metadata = { title: `Report a page · ${PRODUCT_NAME}`, robots: { index: false } };
+export const metadata: Metadata = { title: `Report a page`, robots: { index: false } };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 

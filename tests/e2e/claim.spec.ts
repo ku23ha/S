@@ -19,11 +19,11 @@ test("a visitor claims a free title and the recipient gets a certificate", async
 
   // Home: search shows the title as available with its price.
   await page.goto("/");
-  await expect(page.getByText(DISCLAIMER)).toBeVisible();
+  await expect(page.locator("footer").getByText(DISCLAIMER)).toBeVisible();
   await page.getByRole("textbox", { name: /search a world's best title/i }).fill(title);
   const result = page.getByText("Available", { exact: true });
   await expect(result).toBeVisible();
-  await expect(page.getByText("$5", { exact: true })).toBeVisible();
+  await expect(page.locator("[aria-live=polite]").getByText("$5", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Claim it" }).click();
 
   // Claim form.
@@ -50,7 +50,7 @@ test("a visitor claims a free title and the recipient gets a certificate", async
   // Next keeps the previous route mounted but hidden, so match visible elements only.
   await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toContainText("Kite Flyer");
   await expect(page.getByText("For the highest kites").filter({ visible: true })).toBeVisible();
-  await expect(page.getByText(DISCLAIMER)).toBeVisible();
+  await expect(page.locator("footer").getByText(DISCLAIMER)).toBeVisible();
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(scrollWidth).toBeLessThanOrEqual(375);
 

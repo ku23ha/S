@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { Certificate } from "@/components/Certificate";
 import { SearchBox } from "@/components/SearchBox";
-import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { ShareBar } from "@/components/ShareBar";
 import { OwnerMark } from "@/components/Tracking";
@@ -13,7 +12,7 @@ import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getTitleById } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 
-export const metadata: Metadata = { title: `Thank you · ${PRODUCT_NAME}`, robots: { index: false } };
+export const metadata: Metadata = { title: `Thank you`, robots: { index: false } };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 

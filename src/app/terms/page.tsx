@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Contact, Prose } from "@/components/Prose";
 import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
 
-export const metadata: Metadata = { title: `Terms · ${PRODUCT_NAME}` };
+export const metadata: Metadata = { title: `Terms` };
 
 export default function TermsPage() {
   return (

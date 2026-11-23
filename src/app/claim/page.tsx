@@ -7,9 +7,8 @@ import { SearchBox } from "@/components/SearchBox";
 import { checkTitle } from "@/lib/check";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatPrice, fullTitle } from "@/lib/format";
-import { PRODUCT_NAME } from "@/lib/copy";
 
-export const metadata: Metadata = { title: `Claim a title · ${PRODUCT_NAME}` };
+export const metadata: Metadata = { title: `Claim a title` };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 

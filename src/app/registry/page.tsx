@@ -3,13 +3,12 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { RegistryList } from "@/components/RegistryList";
-import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatPrice, formatRegistryNo, fullTitle, toRegistryCard } from "@/lib/format";
 import { listIconic, listRegistry } from "@/lib/queries";
 import { TIER_PRICE_CENTS, normalizeTitleKey, toTitleDisplay } from "@/lib/titles";
 
-export const metadata: Metadata = { title: `Registry · ${PRODUCT_NAME}` };
+export const metadata: Metadata = { title: `Registry` };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 type Tab = "recent" | "iconic" | "lowest";

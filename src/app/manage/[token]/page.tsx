@@ -6,14 +6,13 @@ import { Certificate } from "@/components/Certificate";
 import { ManageForm } from "@/components/ManageForm";
 import { TrackedDownload } from "@/components/Tracking";
 import { canEdit } from "@/lib/claim";
-import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatDate } from "@/lib/format";
 import { getTitleByManageToken } from "@/lib/queries";
 
 // The URL holds a private token: keep it out of search engines and Referer headers.
 export const metadata: Metadata = {
-  title: `Manage your certificate · ${PRODUCT_NAME}`,
+  title: `Manage your certificate`,
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

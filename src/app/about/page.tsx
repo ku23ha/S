@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/format";
 import { PRINT_ADDON_CENTS, TIER_PRICE_CENTS } from "@/lib/titles";
 
 export const metadata: Metadata = {
-  title: `About · ${PRODUCT_NAME}`,
+  title: `About`,
   description: `What ${PRODUCT_NAME} is, what it costs, and how refunds and removal work. ${DISCLAIMER}`,
 };
 

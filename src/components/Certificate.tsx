@@ -21,7 +21,13 @@ export function Certificate({
   giverName,
   dedication,
   inReview = false,
+  titleAs: TitleTag = "h1",
+  footerNote,
 }: {
+  /** Use "p" when the certificate is an illustration inside another page. */
+  titleAs?: "h1" | "p";
+  /** Shown in place of the number and date on an illustration. */
+  footerNote?: string;
   titleDisplay: string;
   recipientName: string;
   registryNo: number | null;
@@ -35,9 +41,9 @@ export function Certificate({
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">{PRODUCT_NAME}</p>
 
       <p className="mt-6 text-sm uppercase tracking-widest text-neutral-600">{TITLE_PREFIX}</p>
-      <h1 className={`mt-1 font-serif font-bold leading-tight [overflow-wrap:anywhere] ${titleSize(titleDisplay)}`}>
+      <TitleTag className={`mt-1 font-serif font-bold leading-tight [overflow-wrap:anywhere] ${titleSize(titleDisplay)}`}>
         {titleDisplay}
-      </h1>
+      </TitleTag>
 
       {inReview ? (
         <p className="mt-6 text-base text-neutral-700">This certificate is in review and will appear here soon.</p>
@@ -61,6 +67,7 @@ export function Certificate({
           </p>
         )}
         {claimedAt && <p className="mt-1">{formatDate(claimedAt)}</p>}
+        {footerNote && <p>{footerNote}</p>}
       </div>
     </article>
   );

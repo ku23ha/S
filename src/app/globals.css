@@ -1,24 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Brand: warm paper, ink and gold, matching the certificate. The site is
+ * light-only so pages always match the certificate a buyer is getting;
+ * `dark:` utilities only apply under an explicit .dark class, which is never set.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: #fbf8f1;
+  --color-paper-deep: #f4eedf;
+  --color-ink: #1c1917;
+  --color-ink-soft: #44403c;
+  --color-muted: #6b6259;
+  --color-line: #e6dfcf;
+  --color-gold: #a1620a;
+  --color-gold-deep: #7c4a06;
+  --color-gold-soft: #f3e6c8;
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-gold-soft);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
 }

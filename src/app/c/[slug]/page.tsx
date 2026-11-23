@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   await connection();
   const { slug } = await params;
   const cert = await getCertificateBySlug(await getDb(), decodeSlug(slug)).catch(() => null);
-  if (!cert) return { title: `Certificate · ${PRODUCT_NAME}`, robots: { index: false } };
+  if (!cert) return { title: `Certificate`, robots: { index: false } };
 
   const inReview = cert.status === "in_review";
   const title = inReview ? fullTitle(cert.titleDisplay) : `${fullTitle(cert.titleDisplay)}: ${cert.recipientName}`;

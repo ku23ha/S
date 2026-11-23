@@ -6,11 +6,10 @@ import { Suspense } from "react";
 import { AdminLogin, AdminLogout, DismissReport, TitleActions } from "@/components/AdminControls";
 import { type AdminTitle, dailyStats, openReports, reviewQueue, searchTitles } from "@/lib/admin";
 import { ADMIN_COOKIE, verifySessionValue } from "@/lib/admin-auth";
-import { PRODUCT_NAME } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatDate, formatPrice, formatRegistryNo, fullTitle } from "@/lib/format";
 
-export const metadata: Metadata = { title: `Admin · ${PRODUCT_NAME}`, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: `Admin`, robots: { index: false, follow: false } };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 

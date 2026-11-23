@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Contact, Prose } from "@/components/Prose";
 import { PRODUCT_NAME } from "@/lib/copy";
 
-export const metadata: Metadata = { title: `Privacy · ${PRODUCT_NAME}` };
+export const metadata: Metadata = { title: `Privacy` };
 
 export default function PrivacyPage() {
   return (
