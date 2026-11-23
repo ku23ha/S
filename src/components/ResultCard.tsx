@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { CheckResult, CheckVariant } from "@/lib/check";
+import { track } from "@/lib/analytics-client";
 import type { Tier } from "@/lib/titles";
 import { certificatePath, claimHref, formatDate, formatPrice, formatRegistryNo, fullTitle } from "@/lib/format";
 
@@ -10,6 +11,33 @@ export type SearchState =
   | { kind: "checking" }
   | { kind: "error"; message: string }
   | { kind: "result"; result: CheckResult };
+
+/**
+ * "Drop a hint": the person who wants a title sends it to someone who might
+ * give it. Recipients appreciate gifts they asked for (Gino & Flynn 2011).
+ */
+function HintButton({ display }: { display: string }) {
+  async function hint() {
+    const url = `${window.location.origin}${claimHref(display)}`;
+    const text = `Hint, hint: I'd love to be the ${fullTitle(display)}.`;
+    track("share_clicked", { channel: "hint", slug: "" });
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text, url });
+        return;
+      } catch {
+        // Cancelled: fall through to nothing.
+        return;
+      }
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, "_blank", "noopener,noreferrer");
+  }
+  return (
+    <button type="button" onClick={hint} className="text-sm font-medium text-emerald-900 underline underline-offset-4 dark:text-emerald-200">
+      Want it for yourself? Drop a hint
+    </button>
+  );
+}
 
 function Variants({
   variants,
@@ -112,6 +140,10 @@ export function ResultCard({
           >
             Claim it
           </Link>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-emerald-200 pt-3 dark:border-emerald-900">
+          <span className="text-sm text-emerald-900 dark:text-emerald-200">One holder, ever. Once claimed, it&apos;s theirs for good.</span>
+          <HintButton display={r.title.display} />
         </div>
       </div>
     );

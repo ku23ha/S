@@ -71,5 +71,21 @@ test("a visitor claims a free title and the recipient gets a certificate", async
   await expect(page.getByText("Taken", { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByText(/Held by/).filter({ visible: true })).toContainText("मीरा");
 
+  // The surprise link shows a sealed envelope first, then the certificate.
+  await page.goto(`${new URL(page.url()).pathname}?gift=1`);
+  await expect(page.getByText("From Ravi")).toBeVisible();
+  await page.getByRole("button", { name: "Open your gift" }).click();
+  await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toContainText("Kite Flyer");
+  await expect(page.getByText("For the highest kites").filter({ visible: true })).toBeVisible();
+
+  // The gift shop only links out to the four stores; nothing is sold here.
+  await page.goto("/gifts");
+  const out = page.locator('a[rel="sponsored noopener noreferrer"]');
+  expect(await out.count()).toBeGreaterThan(10);
+  for (const href of await out.evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href))) {
+    expect(new URL(href).host).toMatch(/^www\.(amazon\.in|amazon\.com|flipkart\.com|myntra\.com)$/);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
   expect(errors, errors.join("\n")).toEqual([]);
 });

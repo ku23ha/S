@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
+import { CertificateQr } from "@/components/CertificateQr";
 import { ManageForm } from "@/components/ManageForm";
 import { ShopLinks } from "@/components/ShopLinks";
 import { TrackedDownload } from "@/components/Tracking";
@@ -57,7 +58,7 @@ async function ManageBody({ params }: { params: Params }) {
         giverName={t.giverName}
         dedication={t.dedication}
         inReview={t.status === "in_review"}
-        url={`${siteUrl()}${certificatePath(t.slug)}`}
+        qr={<CertificateQr url={`${siteUrl()}${certificatePath(t.slug)}`} />}
       />
 
       {t.status === "claimed" && (

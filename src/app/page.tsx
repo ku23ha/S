@@ -288,7 +288,7 @@ export default function Home() {
         <h2 id="pricing-h" className="font-display text-3xl font-semibold">
           Simple, fixed prices
         </h2>
-        <p className="mt-2 text-ink-soft">Pay once. Prices never change with demand, and there are no renewals.</p>
+        <p className="mt-2 text-ink-soft">Pay once. Prices never change with demand, and there are no renewals. Every tier gets the same certificate; the price only reflects how widely a title is wanted.</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           <PriceCard
             name="Standard"

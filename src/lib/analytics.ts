@@ -15,9 +15,9 @@ export interface AnalyticsEvents {
   checkout_started: { tier: Tier; addon_print: boolean; price_cents: number };
   claim_completed: { tier: Tier; addon_print: boolean; price_cents: number; ref_slug: string | null; registry_no: number };
   certificate_viewed: { slug: string; is_owner_session: boolean; referrer: string | null };
-  share_clicked: { channel: "native" | "copy" | "whatsapp" | "x" | "linkedin"; slug: string };
+  share_clicked: { channel: "native" | "copy" | "whatsapp" | "x" | "linkedin" | "surprise_copy" | "surprise_whatsapp" | "hint"; slug: string };
   download_clicked: { kind: "share_image" | "story_image" | "print_a4" | "print_letter" | "christmas_card" };
-  shop_clicked: { item: "frame" | "card"; store: "in" | "com" };
+  shop_clicked: { item: string; store: "amazon_in" | "amazon_com" | "flipkart" | "myntra" };
   report_submitted: { slug: string };
 }
 

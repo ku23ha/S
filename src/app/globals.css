@@ -155,3 +155,30 @@ body {
     transform: rotate(-8deg);
   }
 }
+
+/* Surprise reveal: the envelope breathes until tapped; the certificate
+   unfolds and the seal stamps in as it opens. */
+.envelope svg {
+  animation: float 5s ease-in-out infinite;
+}
+.envelope:hover .envelope-seal,
+.envelope:focus-visible .envelope-seal {
+  transform: scale(1.08);
+}
+.envelope-seal {
+  transform-origin: 120px 104px;
+  transition: transform 0.2s ease;
+}
+.gift-opened {
+  animation: unfold 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes unfold {
+  from {
+    opacity: 0.4;
+    transform: perspective(900px) rotateX(18deg) translateY(28px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

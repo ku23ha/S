@@ -59,7 +59,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/#pricing" className="hidden text-ink-soft hover:text-ink sm:inline">
                 Pricing
               </Link>
-              <Link href="/#faq" className="hidden text-ink-soft hover:text-ink sm:inline">
+              <Link href="/gifts" className="hidden text-ink-soft hover:text-ink sm:inline">
+                Gift shop
+              </Link>
+              <Link href="/#faq" className="hidden text-ink-soft hover:text-ink md:inline">
                 Questions
               </Link>
               <Link
@@ -90,6 +93,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </Link>
               <Link href="/#pricing" className="text-ink-soft hover:text-ink">
                 Pricing
+              </Link>
+              <Link href="/gifts" className="text-ink-soft hover:text-ink">
+                Gift shop
               </Link>
             </nav>
             <nav aria-label="Site" className="flex flex-col gap-2 text-sm">

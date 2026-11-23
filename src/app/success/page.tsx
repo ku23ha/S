@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { Certificate } from "@/components/Certificate";
+import { CertificateQr } from "@/components/CertificateQr";
 import { SearchBox } from "@/components/SearchBox";
 import { getDb } from "@/lib/db";
 import { ShareBar } from "@/components/ShareBar";
@@ -58,7 +59,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
           <p className="mt-1 text-neutral-700 dark:text-neutral-300">
             {inReview
               ? "We review some entries by hand. This one will be checked within 24 hours; if we can't approve it, you get a full refund."
-              : "The certificate link is on its way to your email too."}
+              : `${t.recipientName} is now the ${fullTitle(t.titleDisplay)}, and no one else ever can be. Send it as a surprise below; the link is in your email too.`}
           </p>
         </div>
         <Certificate
@@ -69,7 +70,7 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
           giverName={t.giverName}
           dedication={t.dedication}
           inReview={inReview}
-          url={`${siteUrl()}${certificatePath(t.slug)}`}
+          qr={<CertificateQr url={`${siteUrl()}${certificatePath(t.slug)}`} />}
         />
         {!inReview && (
           <>

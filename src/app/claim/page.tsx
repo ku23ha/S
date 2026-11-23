@@ -59,7 +59,10 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
         {result.status === "taken" ? (
           <p className="mt-2 [overflow-wrap:anywhere]">
             {fullTitle(result.title.display)} already has a holder.{" "}
-            <Link href={certificatePath(result.holder.slug)} className="underline">
+            <Link
+              href={certificatePath(result.holder.slug)}
+              className="underline"
+            >
               See the certificate
             </Link>
             .
@@ -77,22 +80,42 @@ async function ClaimBody({ searchParams }: { searchParams: SP }) {
   const t = result.title;
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-2xl border-4 border-double border-amber-700 bg-amber-50 px-5 py-6 text-center text-neutral-900">
-        <p className="text-sm uppercase tracking-widest text-neutral-600">World&apos;s Best</p>
-        <h1 className="mt-1 font-serif text-3xl font-bold leading-tight [overflow-wrap:anywhere]">{t.display}</h1>
-        <p className="mt-3 text-sm text-neutral-700">
-          Available · {formatPrice(t.priceCents)} · {t.tier === "standard" ? "Standard" : t.tier === "popular" ? "Popular" : "Iconic"} title
+      <header>
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-deep">
+          Available ·{" "}
+          {t.tier === "standard"
+            ? "Standard"
+            : t.tier === "popular"
+              ? "Popular"
+              : "Iconic"}{" "}
+          title · {formatPrice(t.priceCents)}
         </p>
-      </div>
-      <ClaimForm titleDisplay={t.display} basePriceCents={t.priceCents} tier={t.tier} refSlug={ref} />
+        <h1 className="mt-2 font-display text-3xl font-semibold leading-tight [overflow-wrap:anywhere] sm:text-4xl">
+          World&apos;s Best {t.display}
+        </h1>
+        <p className="mt-2 text-ink-soft">
+          Add their name and watch it appear on the certificate. Once it&apos;s
+          claimed, no one else can hold this title.
+        </p>
+      </header>
+      <ClaimForm
+        titleDisplay={t.display}
+        basePriceCents={t.priceCents}
+        tier={t.tier}
+        refSlug={ref}
+      />
     </div>
   );
 }
 
 export default function ClaimPage({ searchParams }: { searchParams: SP }) {
   return (
-    <main className="mx-auto w-full max-w-xl px-4 py-8">
-      <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" />}>
+    <main className="mx-auto w-full max-w-5xl px-4 py-8">
+      <Suspense
+        fallback={
+          <div className="h-64 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-900" />
+        }
+      >
         <ClaimBody searchParams={searchParams} />
       </Suspense>
     </main>

@@ -1,6 +1,6 @@
 import { PRODUCT_NAME } from "@/lib/copy";
 import { formatDate } from "@/lib/format";
-import { qrPath } from "@/lib/qr";
+import type { ReactNode } from "react";
 import { TITLE_PREFIX } from "@/lib/titles";
 
 function titleSize(display: string): string {
@@ -46,16 +46,6 @@ export function Seal({ registryNo, className = "" }: { registryNo: number | null
   );
 }
 
-function Qr({ url }: { url: string }) {
-  const { size, d } = qrPath(url);
-  return (
-    <svg viewBox={`0 0 ${size} ${size}`} shapeRendering="crispEdges" className="h-16 w-16 sm:h-20 sm:w-20" aria-hidden="true">
-      <rect width={size} height={size} fill="#fffaf0" />
-      <path d={d} fill="#1c1917" />
-    </svg>
-  );
-}
-
 /**
  * The certificate as HTML. User text is rendered as React text nodes, so it
  * is escaped. Long words wrap anywhere so nothing overflows at 375 px.
@@ -70,7 +60,7 @@ export function Certificate({
   inReview = false,
   titleAs: TitleTag = "h1",
   footerNote,
-  url,
+  qr,
 }: {
   titleDisplay: string;
   recipientName: string;
@@ -83,8 +73,8 @@ export function Certificate({
   titleAs?: "h1" | "p";
   /** Shown in place of the date on an illustration. */
   footerNote?: string;
-  /** The certificate's public URL; adds a QR code that leads back to it. */
-  url?: string;
+  /** A QR code leading back to the certificate (CertificateQr, server only). */
+  qr?: ReactNode;
 }) {
   return (
     <article className="certificate relative overflow-hidden rounded-[20px] bg-[#fffaf0] p-2 text-ink shadow-[0_30px_60px_-30px_rgba(124,74,6,0.45)] ring-1 ring-gold/30">
@@ -132,9 +122,9 @@ export function Certificate({
             </div>
             <Seal registryNo={registryNo} className="-mb-2 h-20 w-20 sm:h-24 sm:w-24" />
             <div className="flex flex-col items-end text-right text-xs text-muted">
-              {url ? (
+              {qr ? (
                 <>
-                  <Qr url={url} />
+                  {qr}
                   <p className="mt-1">Scan to look it up</p>
                 </>
               ) : (

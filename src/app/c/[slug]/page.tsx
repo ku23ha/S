@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
+import { CertificateQr } from "@/components/CertificateQr";
 import { SearchBox } from "@/components/SearchBox";
 import Link from "next/link";
+import { GiftReveal } from "@/components/GiftReveal";
 import { ShareBar } from "@/components/ShareBar";
 import { CertificateViewTracker } from "@/components/Tracking";
 import { decodeSlug } from "@/lib/cert-routes";
@@ -15,6 +17,7 @@ import { getCertificateBySlug } from "@/lib/queries";
 import { siteUrl } from "@/lib/site";
 
 type Params = Promise<{ slug: string }>;
+type SP = Promise<Record<string, string | string[] | undefined>>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   await connection();
@@ -37,14 +40,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-async function CertificateBody({ params }: { params: Params }) {
+async function CertificateBody({ params, searchParams }: { params: Params; searchParams: SP }) {
   await connection();
   const { slug } = await params;
+  const asGift = (await searchParams).gift === "1";
   const cert = await getCertificateBySlug(await getDb(), decodeSlug(slug));
   if (!cert) notFound();
 
   const inReview = cert.status === "in_review";
-  return (
+  const body = (
     <>
       <Certificate
         titleDisplay={cert.titleDisplay}
@@ -54,7 +58,7 @@ async function CertificateBody({ params }: { params: Params }) {
         giverName={cert.giverName}
         dedication={cert.dedication}
         inReview={inReview}
-        url={`${siteUrl()}${certificatePath(cert.slug)}`}
+        qr={<CertificateQr url={`${siteUrl()}${certificatePath(cert.slug)}`} />}
       />
       {!inReview && (
         <div className="mt-5">
@@ -77,13 +81,14 @@ async function CertificateBody({ params }: { params: Params }) {
       </p>
     </>
   );
+  return asGift && !inReview ? <GiftReveal giverName={cert.giverName}>{body}</GiftReveal> : body;
 }
 
-export default function CertificatePage({ params }: { params: Params }) {
+export default function CertificatePage({ params, searchParams }: { params: Params; searchParams: SP }) {
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-8">
       <Suspense fallback={<div className="aspect-[4/5] animate-pulse rounded-2xl bg-amber-50" aria-hidden="true" />}>
-        <CertificateBody params={params} />
+        <CertificateBody params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );

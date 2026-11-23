@@ -26,7 +26,8 @@
 | checkout_started | Reservation created | tier, addon_print, price_cents |
 | claim_completed | Webhook confirms payment | tier, addon_print, price_cents, ref_slug, registry_no |
 | certificate_viewed | A certificate page loads | slug, is_owner_session, referrer |
-| share_clicked | A share button is tapped | channel, slug |
+| share_clicked | A share button is tapped (native, copy, whatsapp, x, linkedin, surprise_copy, surprise_whatsapp, hint; hint has an empty slug) | channel, slug |
+| shop_clicked | A gift shop link is tapped | item, store |
 | download_clicked | Image or print file downloaded | kind |
 | report_submitted | A report is sent | slug |
 
