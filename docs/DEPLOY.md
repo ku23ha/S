@@ -23,7 +23,15 @@ The order matters: database first, then payments in test mode, a test purchase o
 3. Check Row Level Security is on for every table (Database > Tables) and that there are no policies. The app connects as the database owner, so it isn't affected; the public API stays closed.
 4. Turn on the backups your plan offers (Database > Backups) and note the restore steps.
 
-## 3. Payments (Dodo), test mode first
+## 3a. Payments with Razorpay (INR, UPI, money to your Indian bank)
+1. In the Razorpay Dashboard, finish KYC and activate the account. Payment Links must be enabled (they are by default on activated accounts). For buyers outside India, apply for International Payments in the Dashboard; until it's approved, foreign cards are declined.
+2. API keys (Account & Settings > API Keys): `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. Start with test keys (`rzp_test_…`), then switch to live keys.
+3. Webhook (Account & Settings > Webhooks): URL `https://worldsbest.cv/api/webhooks/payments`, a secret you generate (put it in `RAZORPAY_WEBHOOK_SECRET`; it is not the API secret), and these events: `payment_link.paid`, `refund.processed`, `payment.dispute.lost`.
+4. Set `PAYMENTS_PROVIDER=razorpay` and `NEXT_PUBLIC_PRICE_CURRENCY=INR`. Prices become ₹399 standard, ₹1,499 popular, ₹7,999 iconic, +₹599 print file.
+5. Money settles to the bank account you verified with Razorpay on their settlement cycle; UPI, cards, netbanking and wallets all work on the hosted page.
+
+## 3b. Payments (Dodo, USD), test mode first
+Use this instead of 3a if you sell in USD through Dodo as merchant of record.
 1. Create four one-time products with fixed prices: Standard $5, Popular $19, Iconic $99, Print add-on $7. Copy their ids into `DODO_PRODUCT_STANDARD`, `DODO_PRODUCT_POPULAR`, `DODO_PRODUCT_ICONIC`, `DODO_PRODUCT_PRINT_ADDON`.
 2. Create an API key (`DODO_API_KEY`, starts with `dodo_test_`). Set `PAYMENTS_MODE=test`.
 3. Add a webhook endpoint `https://<your-domain>/api/webhooks/payments` with at least `payment.succeeded`, `refund.succeeded`, `dispute.lost` and `dispute.accepted`. Copy its signing secret into `DODO_WEBHOOK_SECRET` (the `whsec_...` value as shown).

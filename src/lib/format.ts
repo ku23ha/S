@@ -1,6 +1,6 @@
 /** Display helpers safe for both server and client code. */
 import type { PublicHolder } from "@/lib/queries";
-import { TITLE_PREFIX } from "@/lib/titles";
+import { CURRENCY, type PriceCurrency, TITLE_PREFIX } from "@/lib/titles";
 
 export function fullTitle(display: string): string {
   return `${TITLE_PREFIX} ${display}`;
@@ -18,8 +18,14 @@ export function formatDate(d: Date | string | null | undefined): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
-export function formatPrice(cents: number): string {
-  return cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`;
+/** "$5", "$5.50", "₹399", "₹7,999", in the active price currency. */
+export function formatPrice(cents: number, currency: PriceCurrency = CURRENCY): string {
+  return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
 }
 
 /** Certificate path; slugs may hold non-Latin letters, so encode them. */

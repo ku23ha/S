@@ -14,14 +14,16 @@ import path from "node:path";
 import { ImageResponse } from "next/og";
 import type { ReactElement } from "react";
 import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
-import { formatDate, formatRegistryNo } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { TITLE_PREFIX } from "@/lib/titles";
 import { errorSummary } from "@/lib/log";
+import { qrDataUri } from "@/lib/qr";
 
-export type ImageKind = "share" | "story" | "a4" | "letter";
+export type ImageKind = "share" | "story" | "a4" | "letter" | "christmas";
 
 export const IMAGE_SIZES: Record<ImageKind, { width: number; height: number }> = {
   share: { width: 1200, height: 630 },
+  christmas: { width: 1080, height: 1350 }, // 4:5, fits Instagram and WhatsApp
   story: { width: 1080, height: 1920 },
   a4: { width: 2480, height: 3508 }, // 210 x 297 mm at 300 dpi
   letter: { width: 2550, height: 3300 }, // 8.5 x 11 in at 300 dpi
@@ -36,6 +38,82 @@ export interface CertImageData {
   dedication?: string | null;
   inReview?: boolean;
   siteHost: string;
+  /** Public certificate URL, drawn as a QR code. */
+  url?: string;
+}
+
+/** Gold seal with the registry number, drawn with boxes (Satori has no SVG text paths). */
+function SealBox({ registryNo, size }: { registryNo: number | null; size: number }) {
+  const no = registryNo == null ? "——" : String(registryNo).padStart(6, "0");
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "radial-gradient(circle at 40% 35%, #f6e2a8 0%, #d4a548 55%, #9a6410 100%)",
+        border: `${Math.max(2, size * 0.03)}px solid #8a5a0c`,
+        boxShadow: "0 4px 10px rgba(91,53,4,0.35)",
+        transform: "rotate(-8deg)",
+      }}
+    >
+      <div
+        style={{
+          width: size * 0.74,
+          height: size * 0.74,
+          borderRadius: size,
+          border: `${Math.max(1, size * 0.012)}px solid rgba(124,74,6,0.6)`,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#3f2503",
+        }}
+      >
+        <div style={{ display: "flex", fontSize: size * 0.1, letterSpacing: size * 0.012, fontWeight: 700 }}>REGISTRY</div>
+        <div style={{ display: "flex", fontSize: size * 0.17, fontWeight: 700, marginTop: size * 0.02 }}>{`No. ${no}`}</div>
+        <div style={{ display: "flex", fontSize: size * 0.08, letterSpacing: size * 0.01, marginTop: size * 0.02 }}>ONE HOLDER</div>
+      </div>
+    </div>
+  );
+}
+
+function FooterRow({ d, landscape, s }: { d: CertImageData; landscape: boolean; s: number }) {
+  const seal = landscape ? 110 : 190 * s;
+  const qr = landscape ? 92 : 150 * s;
+  const label = landscape ? 15 : 24 * s;
+  const value = landscape ? 22 : 34 * s;
+  const date = d.claimedAt ? formatDate(d.claimedAt) : "";
+  return (
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderTop: `${landscape ? 1 : 2 * s}px solid rgba(161,98,10,0.4)`,
+        paddingTop: landscape ? 10 : 30 * s,
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", width: qr * 1.6, color: MUTED }}>
+        <div style={{ display: "flex", fontSize: label, letterSpacing: 3 }}>ENTERED</div>
+        <div style={{ display: "flex", fontSize: value, color: INK, fontFamily: SERIF, fontWeight: 700 }}>{date}</div>
+      </div>
+      <SealBox registryNo={d.registryNo} size={seal} />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: qr * 1.6, color: MUTED }}>
+        {d.url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={qrDataUri(d.url, INK, "#fffaf0")} width={qr} height={qr} alt="" />
+        ) : (
+          <div style={{ display: "flex", fontSize: value, color: INK, fontFamily: SERIF }}>{d.siteHost}</div>
+        )}
+        {d.url && <div style={{ display: "flex", fontSize: label, marginTop: 4 }}>Scan to look it up</div>}
+      </div>
+    </div>
+  );
 }
 
 const SUPPORTED_TEXT =
@@ -131,7 +209,6 @@ function Certificate({ d, kind }: { d: CertImageData; kind: ImageKind }) {
     ? sizeFor(d.recipientName, [[16, 60], [28, 48], [40, 38]], 30)
     : sizeFor(d.recipientName, [[16, 84], [28, 68], [40, 56]], 44) * s;
 
-  const meta = [formatRegistryNo(d.registryNo), formatDate(d.claimedAt)].filter(Boolean).join("  ·  ");
 
   return (
     <div
@@ -243,9 +320,7 @@ function Certificate({ d, kind }: { d: CertImageData; kind: ImageKind }) {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-            {meta && (
-              <div style={{ display: "flex", fontSize: landscape ? 24 : 36 * s, color: INK, fontWeight: 700 }}>{meta}</div>
-            )}
+            <FooterRow d={d} landscape={landscape} s={s} />
             {kind === "story" && (
               <div style={{ display: "flex", marginTop: 40 * s, fontSize: 38 * s, color: GOLD, fontWeight: 700 }}>
                 {`Is your title taken? ${d.siteHost}`}
@@ -268,6 +343,172 @@ function Certificate({ d, kind }: { d: CertImageData; kind: ImageKind }) {
             >
               {DISCLAIMER}
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const PINE = "#123528";
+const PINE_DEEP = "#0b2419";
+const CREAM = "#fdf6e3";
+const GOLD_BRIGHT = "#e2b55a";
+
+/** Deterministic "snow": small gold dots scattered across the card. */
+function snow(width: number, height: number, count = 46) {
+  let seed = 7;
+  const rand = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+  return Array.from({ length: count }, (_, i) => {
+    const r = 2 + rand() * 5;
+    return (
+      <div
+        key={i}
+        style={{
+          position: "absolute",
+          left: rand() * width,
+          top: rand() * height,
+          width: r,
+          height: r,
+          borderRadius: r,
+          background: i % 3 === 0 ? GOLD_BRIGHT : "rgba(253,246,227,0.55)",
+        }}
+      />
+    );
+  });
+}
+
+/** Christmas card built from a certificate (1080 x 1350). */
+function ChristmasCard({ d }: { d: CertImageData }) {
+  const { width, height } = IMAGE_SIZES.christmas;
+  const title = isRenderable(d.titleDisplay) ? d.titleDisplay : "";
+  const showName = !d.inReview && isRenderable(d.recipientName);
+  const showGiver = !d.inReview && !!d.giverName && isRenderable(d.giverName);
+  const showDedication = !d.inReview && !!d.dedication && isRenderable(d.dedication);
+  return (
+    <div
+      style={{
+        width,
+        height,
+        display: "flex",
+        position: "relative",
+        background: `linear-gradient(160deg, ${PINE} 0%, ${PINE_DEEP} 100%)`,
+        padding: 48,
+        fontFamily: SANS,
+        color: CREAM,
+      }}
+    >
+      {snow(width, height)}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
+          textAlign: "center",
+          border: `3px solid ${GOLD_BRIGHT}`,
+          borderRadius: 32,
+          padding: "64px 56px 40px",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ display: "flex", fontSize: 26, letterSpacing: 10, color: GOLD_BRIGHT, fontWeight: 700 }}>MERRY CHRISTMAS</div>
+          <div style={{ display: "flex", fontSize: 22, marginTop: 10, color: "rgba(253,246,227,0.75)" }}>and a very happy new year</div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <div style={{ display: "flex", fontSize: 30, color: "rgba(253,246,227,0.8)" }}>This year, you are the</div>
+          <div style={{ display: "flex", marginTop: 18, fontSize: 30, letterSpacing: 8, color: GOLD_BRIGHT }}>
+            {TITLE_PREFIX.toUpperCase()}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              fontFamily: SERIF,
+              fontWeight: 700,
+              fontSize: sizeFor(title, [[12, 120], [20, 96], [28, 80]], 64),
+              lineHeight: 1.08,
+              marginTop: 6,
+              color: CREAM,
+              wordBreak: "break-word",
+              maxWidth: "100%",
+            }}
+          >
+            {title}
+          </div>
+          {showName && (
+            <div
+              style={{
+                display: "flex",
+                marginTop: 28,
+                fontFamily: SERIF,
+                fontStyle: "italic",
+                fontSize: sizeFor(d.recipientName, [[16, 64], [28, 52]], 40),
+                color: CREAM,
+                wordBreak: "break-word",
+              }}
+            >
+              {d.recipientName}
+            </div>
+          )}
+          {showDedication && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 28,
+                fontSize: sizeFor(d.dedication ?? "", [[60, 34], [140, 28]], 24),
+                fontStyle: "italic",
+                color: "rgba(253,246,227,0.85)",
+                lineHeight: 1.4,
+                maxWidth: "88%",
+              }}
+            >
+              {`“${d.dedication}”`}
+            </div>
+          )}
+          {showGiver && (
+            <div style={{ display: "flex", marginTop: 22, fontSize: 26, letterSpacing: 4, color: GOLD_BRIGHT }}>
+              {`WITH LOVE, ${d.giverName?.toUpperCase()}`}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: CREAM,
+              color: INK,
+              borderRadius: 20,
+              padding: "18px 26px",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", width: 230 }}>
+              <div style={{ display: "flex", fontSize: 16, letterSpacing: 3, color: MUTED }}>ENTERED</div>
+              <div style={{ display: "flex", fontSize: 24, fontFamily: SERIF, fontWeight: 700 }}>
+                {d.claimedAt ? formatDate(d.claimedAt) : ""}
+              </div>
+            </div>
+            <SealBox registryNo={d.registryNo} size={130} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", width: 230 }}>
+              {d.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={qrDataUri(d.url, INK, CREAM)} width={104} height={104} alt="" />
+              ) : null}
+              <div style={{ display: "flex", fontSize: 16, color: MUTED, marginTop: 4 }}>{d.siteHost}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", marginTop: 18, fontSize: 17, color: "rgba(253,246,227,0.7)", textAlign: "center" }}>
+            {DISCLAIMER}
           </div>
         </div>
       </div>
@@ -307,7 +548,8 @@ async function toPng(element: ReactElement, kind: ImageKind, fonts?: LoadedFont[
 }
 
 export async function renderCertificatePng(d: CertImageData, kind: ImageKind): Promise<ArrayBuffer> {
-  return toPng(<Certificate d={d} kind={kind} />, kind, await loadFonts());
+  const element = kind === "christmas" ? <ChristmasCard d={d} /> : <Certificate d={d} kind={kind} />;
+  return toPng(element, kind, await loadFonts());
 }
 
 /**

@@ -17,13 +17,22 @@ need("DATABASE_URL", (v) => /^postgres(ql)?:\/\//.test(v), "must be a postgres:/
 if (env.DATABASE_URL && !/:6543\//.test(env.DATABASE_URL)) {
   notes.push("DATABASE_URL is not on port 6543; Supabase recommends the transaction pooler for Vercel functions");
 }
-need("PAYMENTS_PROVIDER", (v) => v === "dodo", "must be dodo");
-need("PAYMENTS_MODE", (v) => v === "live" || v === "test", "must be live or test");
-need("DODO_API_KEY");
-need("DODO_WEBHOOK_SECRET");
-if (env.PAYMENTS_MODE === "live" && env.DODO_API_KEY?.startsWith("dodo_test_")) problems.push("PAYMENTS_MODE=live with a test DODO_API_KEY");
-if (env.PAYMENTS_MODE !== "live") notes.push("PAYMENTS_MODE is not live: real cards won't work");
-for (const n of ["DODO_PRODUCT_STANDARD", "DODO_PRODUCT_POPULAR", "DODO_PRODUCT_ICONIC", "DODO_PRODUCT_PRINT_ADDON"]) need(n);
+need("PAYMENTS_PROVIDER", (v) => v === "dodo" || v === "razorpay", "must be dodo or razorpay");
+if (env.PAYMENTS_PROVIDER === "razorpay") {
+  need("RAZORPAY_KEY_ID", (v) => /^rzp_(live|test)_/.test(v), "should start with rzp_live_ or rzp_test_");
+  need("RAZORPAY_KEY_SECRET");
+  need("RAZORPAY_WEBHOOK_SECRET");
+  need("NEXT_PUBLIC_PRICE_CURRENCY", (v) => v === "INR", "set to INR so the site shows the rupee prices Razorpay charges");
+  if (env.RAZORPAY_KEY_ID?.startsWith("rzp_test_")) notes.push("RAZORPAY_KEY_ID is a test key: real payments won't work");
+} else {
+  need("PAYMENTS_MODE", (v) => v === "live" || v === "test", "must be live or test");
+  need("DODO_API_KEY");
+  need("DODO_WEBHOOK_SECRET");
+  if (env.PAYMENTS_MODE === "live" && env.DODO_API_KEY?.startsWith("dodo_test_")) problems.push("PAYMENTS_MODE=live with a test DODO_API_KEY");
+  if (env.PAYMENTS_MODE !== "live") notes.push("PAYMENTS_MODE is not live: real cards won't work");
+  for (const n of ["DODO_PRODUCT_STANDARD", "DODO_PRODUCT_POPULAR", "DODO_PRODUCT_ICONIC", "DODO_PRODUCT_PRINT_ADDON"]) need(n);
+  if (env.NEXT_PUBLIC_PRICE_CURRENCY === "INR") problems.push("Dodo products are priced in USD; leave NEXT_PUBLIC_PRICE_CURRENCY unset or USD");
+}
 need("RESEND_API_KEY");
 need("EMAIL_FROM", (v) => !/resend\.dev/i.test(v), "must use your verified domain, not resend.dev");
 need("ADMIN_PASSWORD_HASH", (v) => /^scrypt\$\d+\$\d+\$\d+\$[^$]+\$[^$]+$/.test(v), "make it with npm run admin:hash");

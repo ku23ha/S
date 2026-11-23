@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ShareBar } from "@/components/ShareBar";
 import { CertificateViewTracker } from "@/components/Tracking";
 import { decodeSlug } from "@/lib/cert-routes";
-import { DISCLAIMER, PRODUCT_NAME } from "@/lib/copy";
+import { DISCLAIMER, PRODUCT_NAME, isChristmasSeason } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getCertificateBySlug } from "@/lib/queries";
@@ -54,11 +54,12 @@ async function CertificateBody({ params }: { params: Params }) {
         giverName={cert.giverName}
         dedication={cert.dedication}
         inReview={inReview}
+        url={`${siteUrl()}${certificatePath(cert.slug)}`}
       />
       {!inReview && (
         <div className="mt-5">
           <CertificateViewTracker slug={cert.slug} />
-          <ShareBar slug={cert.slug} text={shareText(cert)} siteUrl={siteUrl()} />
+          <ShareBar slug={cert.slug} text={shareText(cert)} siteUrl={siteUrl()} christmas={isChristmasSeason()} />
         </div>
       )}
       <section aria-labelledby="your-title" className="mt-10">

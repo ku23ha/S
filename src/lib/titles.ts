@@ -13,14 +13,25 @@ export const TITLE_MAX_LENGTH = 40;
 export type Tier = "standard" | "popular" | "iconic";
 export type ListedTier = Exclude<Tier, "standard">;
 
-/** Fixed public price list (docs/PRD.md). The only source of prices. */
-export const TIER_PRICE_CENTS: Readonly<Record<Tier, number>> = {
-  standard: 500,
-  popular: 1900,
-  iconic: 9900,
+export type PriceCurrency = "USD" | "INR";
+
+/**
+ * Fixed public price lists, in the currency's smallest unit (cents, paise).
+ * USD is the brief's list (docs/PRD.md) and matches the Dodo products. INR is
+ * used with Razorpay, which settles to an Indian bank account and takes UPI.
+ * The active list is chosen once by NEXT_PUBLIC_PRICE_CURRENCY so the pages
+ * and the server always agree. Prices never change with demand.
+ */
+const PRICE_LISTS: Readonly<Record<PriceCurrency, { tiers: Record<Tier, number>; printAddon: number }>> = {
+  USD: { tiers: { standard: 500, popular: 1900, iconic: 9900 }, printAddon: 700 },
+  INR: { tiers: { standard: 39_900, popular: 1_49_900, iconic: 7_99_900 }, printAddon: 59_900 },
 };
-export const PRINT_ADDON_CENTS = 700;
-export const CURRENCY = "USD";
+
+export const CURRENCY: PriceCurrency = process.env.NEXT_PUBLIC_PRICE_CURRENCY === "INR" ? "INR" : "USD";
+
+/** The only source of prices. */
+export const TIER_PRICE_CENTS: Readonly<Record<Tier, number>> = PRICE_LISTS[CURRENCY].tiers;
+export const PRINT_ADDON_CENTS = PRICE_LISTS[CURRENCY].printAddon;
 
 export type TitleRejectReason =
   | "too_short"

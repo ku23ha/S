@@ -9,7 +9,18 @@ import { certificatePath } from "@/lib/format";
 const subscribeNoop = () => () => {};
 
 /** Share a certificate: native share sheet where available, links and downloads otherwise. */
-export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; siteUrl: string }) {
+export function ShareBar({
+  slug,
+  text,
+  siteUrl,
+  christmas = false,
+}: {
+  slug: string;
+  text: string;
+  siteUrl: string;
+  /** Offer the Christmas card download (in season). */
+  christmas?: boolean;
+}) {
   const url = `${siteUrl}${certificatePath(slug)}`;
   const encodedSlug = encodeURIComponent(slug);
   const [copied, setCopied] = useState(false);
@@ -93,6 +104,16 @@ export function ShareBar({ slug, text, siteUrl }: { slug: string; text: string; 
         >
           Download story
         </TrackedDownload>
+        {christmas && (
+          <TrackedDownload
+            kind="christmas_card"
+            className={`${btn} col-span-2 border-[#123528] bg-[#123528] text-[#fdf6e3] hover:border-[#e2b55a]`}
+            href={`/api/cert/${encodedSlug}/card?download=1`}
+            download="worlds-best-christmas-card.png"
+          >
+            Download the Christmas card
+          </TrackedDownload>
+        )}
       </div>
     </section>
   );

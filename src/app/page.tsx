@@ -4,7 +4,7 @@ import { type ReactNode, Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
 import { RegistryCardView } from "@/components/RegistryList";
 import { SearchBox } from "@/components/SearchBox";
-import { BENEFITS, FAQ, GIFT_IDEAS, HEADLINE, HOW_IT_WORKS, PROMISES, SUBHEAD, TAGLINE } from "@/lib/copy";
+import { BENEFITS, COLLECTIONS, FAQ, HEADLINE, HOW_IT_WORKS, PROMISES, SUBHEAD, TAGLINE, TRUST } from "@/lib/copy";
 import { getDb } from "@/lib/db";
 import { claimHref, formatPrice, fullTitle, toRegistryCard } from "@/lib/format";
 import { errorSummary } from "@/lib/log";
@@ -128,11 +128,11 @@ export default function Home() {
         />
         <div className="relative mx-auto grid w-full max-w-5xl items-center gap-10 px-4 pb-14 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:pt-16">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-deep">{TAGLINE}</p>
-            <h1 className="mt-3 font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">{HEADLINE}</h1>
-            <p className="mt-4 max-w-xl text-lg text-ink-soft">{SUBHEAD}</p>
+            <p className="rise text-sm font-semibold uppercase tracking-[0.18em] text-gold-deep">{TAGLINE}</p>
+            <h1 className="rise rise-2 mt-3 font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">{HEADLINE}</h1>
+            <p className="rise rise-3 mt-4 max-w-xl text-lg text-ink-soft">{SUBHEAD}</p>
 
-            <div id="search" className="mt-7 scroll-mt-24">
+            <div id="search" className="rise rise-3 mt-7 scroll-mt-24">
               <SearchBox source="home" label="Search a World's Best title" />
             </div>
 
@@ -147,7 +147,7 @@ export default function Home() {
           </div>
 
           <figure className="relative mx-auto w-full max-w-sm lg:max-w-none">
-            <div className="rotate-[-1.5deg] transition hover:rotate-0">
+            <div className="float">
               <Certificate
                 titleDisplay="Chai Maker"
                 recipientName="Your person's name"
@@ -170,7 +170,7 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section aria-labelledby="how" className="mx-auto w-full max-w-5xl px-4">
+      <section aria-labelledby="how" className="reveal mx-auto w-full max-w-5xl px-4">
         <h2 id="how" className="font-display text-3xl font-semibold">
           How it works
         </h2>
@@ -186,7 +186,7 @@ export default function Home() {
       </section>
 
       {/* Why it lands */}
-      <section aria-labelledby="why" className="bg-paper-deep py-16">
+      <section aria-labelledby="why" className="reveal bg-paper-deep py-16">
         <div className="mx-auto w-full max-w-5xl px-4">
           <h2 id="why" className="max-w-2xl font-display text-3xl font-semibold">
             Not another mug. A title nobody else can ever give them.
@@ -202,26 +202,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Gift ideas */}
-      <section aria-labelledby="ideas" className="mx-auto w-full max-w-5xl px-4">
+      {/* Trust */}
+      <section aria-labelledby="trust" className="reveal mx-auto w-full max-w-5xl px-4">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-deep">Why it means something</p>
+            <h2 id="trust" className="mt-2 font-display text-3xl font-semibold">
+              A gift is only special if nobody else can give it.
+            </h2>
+            <p className="mt-3 text-ink-soft">
+              Anyone can print a certificate. Only one person in the world can hold each title here, and the record shows it.
+            </p>
+            <form action="/registry" method="get" role="search" className="mt-6 rounded-2xl border border-line bg-white/80 p-4">
+              <label htmlFor="lookup" className="text-sm font-semibold">
+                Look up a certificate
+              </label>
+              <div className="mt-2 flex gap-2">
+                <input
+                  id="lookup"
+                  name="q"
+                  placeholder="A title, or a number like 42"
+                  className="min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-3 text-base outline-none focus:border-gold"
+                />
+                <button type="submit" className="rounded-lg bg-ink px-4 font-semibold text-paper hover:bg-ink-soft">
+                  Look up
+                </button>
+              </div>
+            </form>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {TRUST.map((t) => (
+              <li key={t.title} className="rounded-2xl border border-line bg-white/70 p-5 transition hover:-translate-y-0.5 hover:border-gold/60">
+                <p className="font-semibold">{t.title}</p>
+                <p className="mt-2 text-sm text-ink-soft">{t.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Collections */}
+      <section aria-labelledby="ideas" className="reveal mx-auto w-full max-w-5xl px-4">
         <h2 id="ideas" className="font-display text-3xl font-semibold">
           Not sure what to search?
         </h2>
         <p className="mt-2 text-ink-soft">The best ones are specific. Start with one of these, or make it theirs.</p>
-        <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {GIFT_IDEAS.map((g) => (
-            <li key={g.title}>
-              <Link
-                href={claimHref(g.title)}
-                className="block h-full rounded-xl border border-line bg-white/70 p-4 transition hover:border-gold hover:bg-white"
-              >
-                <span className="block text-xs uppercase tracking-widest text-muted">World&apos;s Best</span>
-                <span className="mt-1 block font-display text-lg font-semibold leading-snug">{g.title}</span>
-                <span className="mt-1 block text-sm text-muted">{g.note}</span>
-              </Link>
-            </li>
+        <div className="mt-8 flex flex-col gap-10">
+          {COLLECTIONS.map((c) => (
+            <div key={c.id}>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h3 className="font-display text-xl font-semibold">{c.name}</h3>
+              </div>
+              <p className="mt-1 max-w-2xl text-sm text-muted">{c.blurb}</p>
+              <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {c.titles.map((g) => (
+                  <li key={g.title}>
+                    <Link
+                      href={claimHref(g.title)}
+                      className={`block h-full rounded-xl border p-4 transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-16px_rgba(124,74,6,0.6)] ${
+                        c.id === "christmas"
+                          ? "border-[#123528]/20 bg-[#123528] text-[#fdf6e3] hover:border-[#e2b55a]"
+                          : "border-line bg-white/70 hover:border-gold hover:bg-white"
+                      }`}
+                    >
+                      <span className={`block text-[11px] uppercase tracking-widest ${c.id === "christmas" ? "text-[#e2b55a]" : "text-muted"}`}>
+                        World&apos;s Best
+                      </span>
+                      <span className="mt-1 block font-display text-lg font-semibold leading-snug">{g.title}</span>
+                      <span className={`mt-1 block text-xs ${c.id === "christmas" ? "text-[#fdf6e3]/70" : "text-muted"}`}>{g.note}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
       <Suspense fallback={null}>
@@ -229,7 +284,7 @@ export default function Home() {
       </Suspense>
 
       {/* Pricing */}
-      <section id="pricing" aria-labelledby="pricing-h" className="mx-auto w-full max-w-5xl scroll-mt-24 px-4">
+      <section id="pricing" aria-labelledby="pricing-h" className="reveal mx-auto w-full max-w-5xl scroll-mt-24 px-4">
         <h2 id="pricing-h" className="font-display text-3xl font-semibold">
           Simple, fixed prices
         </h2>
@@ -263,7 +318,7 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" aria-labelledby="faq-h" className="mx-auto w-full max-w-3xl scroll-mt-24 px-4">
+      <section id="faq" aria-labelledby="faq-h" className="reveal mx-auto w-full max-w-3xl scroll-mt-24 px-4">
         <h2 id="faq-h" className="font-display text-3xl font-semibold">
           Questions
         </h2>
@@ -283,7 +338,7 @@ export default function Home() {
       </section>
 
       {/* Closing search */}
-      <section aria-labelledby="close" className="mx-auto w-full max-w-3xl px-4">
+      <section aria-labelledby="close" className="reveal mx-auto w-full max-w-3xl px-4">
         <div className="rounded-3xl border border-gold/40 bg-white p-6 text-center shadow-[0_8px_30px_-16px_rgba(161,98,10,0.35)] sm:p-10">
           <h2 id="close" className="font-display text-3xl font-semibold">
             Who&apos;s the best at something you love?

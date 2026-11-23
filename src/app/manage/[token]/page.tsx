@@ -4,10 +4,12 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Certificate } from "@/components/Certificate";
 import { ManageForm } from "@/components/ManageForm";
+import { ShopLinks } from "@/components/ShopLinks";
 import { TrackedDownload } from "@/components/Tracking";
 import { canEdit } from "@/lib/claim";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatDate } from "@/lib/format";
+import { siteUrl } from "@/lib/site";
 import { getTitleByManageToken } from "@/lib/queries";
 
 // The URL holds a private token: keep it out of search engines and Referer headers.
@@ -55,6 +57,7 @@ async function ManageBody({ params }: { params: Params }) {
         giverName={t.giverName}
         dedication={t.dedication}
         inReview={t.status === "in_review"}
+        url={`${siteUrl()}${certificatePath(t.slug)}`}
       />
 
       {t.status === "claimed" && (
@@ -86,6 +89,8 @@ async function ManageBody({ params }: { params: Params }) {
           </div>
         </section>
       )}
+
+      <ShopLinks />
 
       <section aria-labelledby="edit">
         <h2 id="edit" className="text-lg font-semibold">

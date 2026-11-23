@@ -1,9 +1,10 @@
 /**
  * Payment provider interface. All payment calls go through here so another
- * provider can be swapped in. Prices are never passed in: the provider maps
- * the tier (and add-on) to its own fixed-price products.
+ * provider can be swapped in. Amounts here always come from the server's
+ * price list, never from the browser. Dodo maps the tier to its own
+ * fixed-price products; Razorpay charges amountMinor directly.
  */
-import type { Tier } from "@/lib/titles";
+import type { PriceCurrency, Tier } from "@/lib/titles";
 
 export interface CreateCheckoutInput {
   titleId: string;
@@ -11,6 +12,11 @@ export interface CreateCheckoutInput {
   addonPrint: boolean;
   customerEmail: string;
   returnUrl: string;
+  /** Server price in the currency's smallest unit. */
+  amountMinor: number;
+  currency: PriceCurrency;
+  /** Shown on the hosted payment page, e.g. "World's Best Chai Maker". */
+  description: string;
 }
 
 export interface CheckoutSession {
@@ -56,6 +62,16 @@ export async function getPaymentProvider(): Promise<PaymentProvider> {
   if (override) return override;
   if (cached) return cached;
   const provider = process.env.PAYMENTS_PROVIDER ?? "dodo";
+  if (
+    provider === "razorpay" &&
+    process.env.RAZORPAY_KEY_ID &&
+    process.env.RAZORPAY_KEY_SECRET &&
+    process.env.RAZORPAY_WEBHOOK_SECRET
+  ) {
+    const { createRazorpayProvider } = await import("@/lib/payments/razorpay");
+    cached = createRazorpayProvider();
+    return cached;
+  }
   if (provider === "dodo" && process.env.DODO_API_KEY && process.env.DODO_WEBHOOK_SECRET) {
     const { createDodoProvider } = await import("@/lib/payments/dodo");
     cached = createDodoProvider();
@@ -66,7 +82,9 @@ export async function getPaymentProvider(): Promise<PaymentProvider> {
     cached = createStubProvider();
     return cached;
   }
-  throw new Error("Payments are not configured: set PAYMENTS_PROVIDER=dodo, DODO_API_KEY and DODO_WEBHOOK_SECRET");
+  throw new Error(
+    "Payments are not configured: set PAYMENTS_PROVIDER=razorpay with RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET, or PAYMENTS_PROVIDER=dodo with DODO_API_KEY and DODO_WEBHOOK_SECRET",
+  );
 }
 
 /** Tests only. */

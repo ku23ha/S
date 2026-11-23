@@ -179,6 +179,23 @@ function tokensEqual(a: string, b: string): boolean {
   return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
+/** "42", "No. 42", "#42", "№ 000042" -> 42. Anything else -> null. */
+export function parseRegistryNumber(q: string): number | null {
+  const m = q.trim().match(/^(?:no\.?|#|№)?\s*0*(\d{1,9})$/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return n > 0 ? n : null;
+}
+
+/** The claimed certificate with this registry number, if any. */
+export async function getCertificateByNumber(db: Db, registryNo: number): Promise<PublicHolder | null> {
+  const rows = await db.query<HolderRow>(
+    `select ${HOLDER_COLUMNS} from titles where registry_no = $1 and status = 'claimed' limit 1`,
+    [registryNo],
+  );
+  return rows[0] ? toHolder(rows[0]) : null;
+}
+
 export async function countClaimed(db: Db): Promise<number> {
   const rows = await db.query<{ c: number }>(`select count(*)::int as c from titles where status = 'claimed'`);
   return rows[0]?.c ?? 0;

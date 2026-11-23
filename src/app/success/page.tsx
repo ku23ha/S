@@ -7,6 +7,8 @@ import { Certificate } from "@/components/Certificate";
 import { SearchBox } from "@/components/SearchBox";
 import { getDb } from "@/lib/db";
 import { ShareBar } from "@/components/ShareBar";
+import { ShopLinks } from "@/components/ShopLinks";
+import { isChristmasSeason } from "@/lib/copy";
 import { OwnerMark } from "@/components/Tracking";
 import { certificatePath, fullTitle, shareText } from "@/lib/format";
 import { getTitleById } from "@/lib/queries";
@@ -67,10 +69,12 @@ async function SuccessBody({ searchParams }: { searchParams: SP }) {
           giverName={t.giverName}
           dedication={t.dedication}
           inReview={inReview}
+          url={`${siteUrl()}${certificatePath(t.slug)}`}
         />
         {!inReview && (
           <>
-            <ShareBar slug={t.slug} text={shareText(t)} siteUrl={siteUrl()} />
+            <ShareBar slug={t.slug} text={shareText(t)} siteUrl={siteUrl()} christmas={isChristmasSeason()} />
+            <ShopLinks />
             <Link href={certificatePath(t.slug)} className="text-center underline underline-offset-4">
               Open the certificate page
             </Link>

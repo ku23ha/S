@@ -47,3 +47,111 @@ body {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
 }
+
+/* Certificate paper: a faint engraved pattern, like banknote guilloche. */
+.certificate-paper {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 250, 240, 0.96) 0 38%, rgba(255, 250, 240, 0.82) 70%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(161, 98, 10, 0.07) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(45deg, rgba(161, 98, 10, 0.035) 0 1px, transparent 1px 9px),
+    #fffaf0;
+}
+
+/* The seal stamps in, then a slow shimmer passes over it. */
+.seal-body {
+  transform-origin: 60px 60px;
+  animation: seal-stamp 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) 0.35s both;
+}
+.seal {
+  filter: drop-shadow(0 3px 4px rgba(91, 53, 4, 0.35));
+}
+@keyframes seal-stamp {
+  from {
+    opacity: 0.5;
+    transform: scale(1.8) rotate(-24deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-8deg);
+  }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: shimmer 5s ease-in-out 1.4s infinite;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  0%,
+  70% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/* Gentle hero entrance. */
+.rise {
+  animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.rise-2 {
+  animation-delay: 0.12s;
+}
+.rise-3 {
+  animation-delay: 0.24s;
+}
+@keyframes rise {
+  /* Never fully transparent: a paused animation (background tab) must not hide content. */
+  from {
+    opacity: 0.45;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Sections rise in as they scroll into view, where the browser supports it.
+   Without support (or JavaScript) everything is simply visible. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+}
+
+.float {
+  animation: float 7s ease-in-out infinite;
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-0.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .seal-body {
+    transform: rotate(-8deg);
+  }
+}

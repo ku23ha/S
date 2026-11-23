@@ -112,6 +112,9 @@ export async function startCheckout(
         addonPrint: input.addonPrint,
         customerEmail: input.email,
         returnUrl: `${siteUrl}/success?id=${row.id}`,
+        amountMinor: amount,
+        currency: CURRENCY,
+        description: `World's Best ${title.display}${input.addonPrint ? " + print file" : ""}`,
       });
       await tx.query(`update titles set checkout_id = $2, updated_at = now() where id = $1`, [row.id, session.checkoutId]);
       return { titleId: row.id, checkoutUrl: session.checkoutUrl, reservedUntil: new Date(row.reserved_until).toISOString() };

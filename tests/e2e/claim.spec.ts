@@ -42,7 +42,8 @@ test("a visitor claims a free title and the recipient gets a certificate", async
   await expect(page).toHaveURL(/\/success\?id=/);
   await expect(page.getByRole("heading", { name: "It's theirs" })).toBeVisible();
   await expect(page.getByText("मीरा").first()).toBeVisible();
-  await expect(page.getByText(/No\. 0000\d\d/).first()).toBeVisible();
+  // The registry number is on the gold seal.
+  await expect(page.getByRole("img", { name: /Registry number 0000\d\d/ }).first()).toBeVisible();
 
   // Public certificate page.
   await page.getByRole("link", { name: "Open the certificate page" }).click();

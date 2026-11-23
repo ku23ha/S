@@ -9,7 +9,6 @@ import { randomUUID } from "node:crypto";
 import { Webhook } from "standardwebhooks";
 import { parseDodoWebhook } from "@/lib/payments/dodo";
 import type { CheckoutSession, CreateCheckoutInput, PaymentEvent, PaymentProvider } from "@/lib/payments/index";
-import { PRINT_ADDON_CENTS, TIER_PRICE_CENTS } from "@/lib/titles";
 
 /** Base64 of a fixed development key; not a secret. */
 export const STUB_WEBHOOK_SECRET = "whsec_ZGV2LW9ubHktc3R1Yi13ZWJob29rLWtleS0wMDAwMDA=";
@@ -21,7 +20,7 @@ export function createStubProvider(): PaymentProvider {
     name: "stub",
     async createCheckout(input: CreateCheckoutInput): Promise<CheckoutSession> {
       const checkoutId = `cks_stub_${randomUUID()}`;
-      const amount = TIER_PRICE_CENTS[input.tier] + (input.addonPrint ? PRINT_ADDON_CENTS : 0);
+      const amount = input.amountMinor;
       const p = new URLSearchParams({
         checkout: checkoutId,
         title_id: input.titleId,

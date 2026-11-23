@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { RegistryList } from "@/components/RegistryList";
 import { getDb } from "@/lib/db";
 import { certificatePath, formatPrice, formatRegistryNo, fullTitle, toRegistryCard } from "@/lib/format";
-import { listIconic, listRegistry } from "@/lib/queries";
+import { getCertificateByNumber, listIconic, listRegistry, parseRegistryNumber } from "@/lib/queries";
 import { TIER_PRICE_CENTS, normalizeTitleKey, toTitleDisplay } from "@/lib/titles";
 
 export const metadata: Metadata = { title: `Registry` };
@@ -70,8 +71,22 @@ async function RegistryBody({ searchParams }: { searchParams: SP }) {
   const qRaw = first(sp.q).slice(0, 200);
   const q = normalizeTitleKey(qRaw);
 
+  // A registry number goes straight to its certificate.
+  const asNumber = parseRegistryNumber(qRaw);
+  let numberMiss = false;
+  if (asNumber != null) {
+    const cert = await getCertificateByNumber(await getDb(), asNumber);
+    if (cert) redirect(certificatePath(cert.slug));
+    numberMiss = true;
+  }
+
   return (
     <>
+      {numberMiss && (
+        <p role="status" className="mb-4 rounded-lg border border-line bg-white/80 p-3 text-ink-soft">
+          No certificate has number {formatRegistryNo(asNumber)} yet.
+        </p>
+      )}
       <form action="/registry" method="get" role="search" className="flex gap-2">
         {tab !== "iconic" && <input type="hidden" name="tab" value={tab} />}
         <label htmlFor="registry-q" className="sr-only">
@@ -81,7 +96,7 @@ async function RegistryBody({ searchParams }: { searchParams: SP }) {
           id="registry-q"
           name="q"
           defaultValue={qRaw}
-          placeholder="Search claimed titles"
+          placeholder="A title, or a number like 42"
           className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base dark:border-neutral-700 dark:bg-neutral-950"
         />
         <button type="submit" className="rounded-lg bg-neutral-900 px-4 text-base font-semibold text-white dark:bg-white dark:text-neutral-900">

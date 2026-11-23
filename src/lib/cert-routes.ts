@@ -3,6 +3,8 @@ import type { CertImageData } from "@/lib/cert-image";
 import { getDb } from "@/lib/db";
 import { type PublicHolder, getCertificateBySlug } from "@/lib/queries";
 import { errorSummary } from "@/lib/log";
+import { certificatePath } from "@/lib/format";
+import { siteUrl } from "@/lib/site";
 
 export function decodeSlug(raw: string): string {
   try {
@@ -22,6 +24,7 @@ export function toImageData(h: PublicHolder, host: string): CertImageData {
     dedication: h.dedication,
     inReview: h.status === "in_review",
     siteHost: host,
+    url: `${siteUrl()}${certificatePath(h.slug)}`,
   };
 }
 
